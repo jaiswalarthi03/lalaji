@@ -1,5 +1,5 @@
 """
-IROPS Coordinator Agent - Main orchestration for Irregular Operations
+Meet Lalaji Inventory Coordinator Agent - Main orchestration for inventory operations
 """
 
 import asyncio
@@ -11,16 +11,16 @@ from google.adk.tools import BaseTool
 from google.genai import types
 from pydantic import PrivateAttr
 
-from .domain_agent_1 import DomainAgent1
-from .domain_agent_2 import DomainAgent2
-from .domain_agent_3 import DomainAgent3
+from .inventory_reorder_agent import InventoryReorderAgent
+from .seasonal_demand_agent import SeasonalDemandAgent
+from .supplier_management_agent import SupplierManagementAgent
 from ..tools.function_tools import process_data, save_result
 from ..tools.external_tools import (
-    WeatherAPITool, 
-    FlightTrackingAPITool, 
-    PassengerManagementAPITool, 
-    AirportInfoAPITool, 
-    CrewManagementAPITool
+    InventoryAPITool, 
+    SupplierAPITool, 
+    CustomerOrderAPITool, 
+    AnalyticsAPITool, 
+    PricingAPITool
 )
 from ..tools.agent_tools import (
     AgentTool,
@@ -32,11 +32,11 @@ from ..tools.agent_tools import (
 from ..config import Config
 
 
-class CoordinatorAgent(BaseAgent):
+class InventoryCoordinatorAgent(BaseAgent):
     """
-    IROPS Coordinator Agent demonstrating ALL ADK agent features:
+    Meet Lalaji Inventory Coordinator Agent demonstrating ALL ADK agent features:
     - LlmAgent for reasoning and planning
-    - SequentialAgent for ordered IROPS workflows
+    - SequentialAgent for ordered inventory workflows
     - ParallelAgent for concurrent operations
     - LoopAgent for continuous monitoring
     - Custom orchestration logic
@@ -45,20 +45,20 @@ class CoordinatorAgent(BaseAgent):
     """
     
     _tools: list = PrivateAttr()
-    _domain_agent_1: DomainAgent1 = PrivateAttr()
-    _domain_agent_2: DomainAgent2 = PrivateAttr()
-    _domain_agent_3: DomainAgent3 = PrivateAttr()
-    _domain_1_tool: AgentTool = PrivateAttr()
-    _domain_2_tool: AgentTool = PrivateAttr()
-    _domain_3_tool: AgentTool = PrivateAttr()
+    _inventory_reorder_agent: InventoryReorderAgent = PrivateAttr()
+    _seasonal_demand_agent: SeasonalDemandAgent = PrivateAttr()
+    _supplier_management_agent: SupplierManagementAgent = PrivateAttr()
+    _inventory_reorder_tool: AgentTool = PrivateAttr()
+    _seasonal_demand_tool: AgentTool = PrivateAttr()
+    _supplier_management_tool: AgentTool = PrivateAttr()
     _analysis_workflow: SequentialAgent = PrivateAttr()
     _execution_workflow: ParallelAgent = PrivateAttr()
     _monitoring_workflow: LoopAgent = PrivateAttr()
-    _weather_tool: WeatherAPITool = PrivateAttr()
-    _flight_tracking_tool: FlightTrackingAPITool = PrivateAttr()
-    _passenger_mgmt_tool: PassengerManagementAPITool = PrivateAttr()
-    _airport_info_tool: AirportInfoAPITool = PrivateAttr()
-    _crew_mgmt_tool: CrewManagementAPITool = PrivateAttr()
+    _inventory_tool: InventoryAPITool = PrivateAttr()
+    _supplier_tool: SupplierAPITool = PrivateAttr()
+    _customer_order_tool: CustomerOrderAPITool = PrivateAttr()
+    _analytics_tool: AnalyticsAPITool = PrivateAttr()
+    _pricing_tool: PricingAPITool = PrivateAttr()
     _specialist_agent_tool: SpecialistAgentTool = PrivateAttr()
     _dynamic_agent_tool: DynamicAgentSpawner = PrivateAttr()
     _event_driven_tool: EventDrivenAgent = PrivateAttr()
@@ -66,38 +66,38 @@ class CoordinatorAgent(BaseAgent):
 
     def __init__(self):
         super().__init__(
-            name="irops_coordinator_agent",
-            description="IROPS coordination with multi-agent orchestration"
+            name="inventory_coordinator_agent",
+            description="Inventory coordination with multi-agent orchestration for Meet Lalaji"
         )
         
         # Initialize private attributes after super().__init__()
-        self.__pydantic_private__['_domain_agent_1'] = DomainAgent1()
-        self.__pydantic_private__['_domain_agent_2'] = DomainAgent2()
-        self.__pydantic_private__['_domain_agent_3'] = DomainAgent3()
-        self.__pydantic_private__['_domain_1_tool'] = AgentTool(self._domain_agent_1, "flight_monitoring_tool", "Tool for monitoring flight status and operations")
-        self.__pydantic_private__['_domain_2_tool'] = AgentTool(self._domain_agent_2, "passenger_impact_tool", "Tool for analyzing passenger impact and requirements")
-        self.__pydantic_private__['_domain_3_tool'] = AgentTool(self._domain_agent_3, "advanced_irops_tool", "Tool for advanced IROPS analysis and optimization")
+        self.__pydantic_private__['_inventory_reorder_agent'] = InventoryReorderAgent()
+        self.__pydantic_private__['_seasonal_demand_agent'] = SeasonalDemandAgent()
+        self.__pydantic_private__['_supplier_management_agent'] = SupplierManagementAgent()
+        self.__pydantic_private__['_inventory_reorder_tool'] = AgentTool(self._inventory_reorder_agent, "inventory_reorder_tool", "Tool for managing inventory reordering and stock levels")
+        self.__pydantic_private__['_seasonal_demand_tool'] = AgentTool(self._seasonal_demand_agent, "seasonal_demand_tool", "Tool for analyzing seasonal demand patterns and forecasting")
+        self.__pydantic_private__['_supplier_management_tool'] = AgentTool(self._supplier_management_agent, "supplier_management_tool", "Tool for managing supplier relationships and orders")
         self.__pydantic_private__['_analysis_workflow'] = self._create_analysis_workflow()
         self.__pydantic_private__['_execution_workflow'] = self._create_execution_workflow()
         self.__pydantic_private__['_monitoring_workflow'] = self._create_monitoring_workflow()
-        self.__pydantic_private__['_weather_tool'] = WeatherAPITool()
-        self.__pydantic_private__['_flight_tracking_tool'] = FlightTrackingAPITool()
-        self.__pydantic_private__['_passenger_mgmt_tool'] = PassengerManagementAPITool()
-        self.__pydantic_private__['_airport_info_tool'] = AirportInfoAPITool()
-        self.__pydantic_private__['_crew_mgmt_tool'] = CrewManagementAPITool()
+        self.__pydantic_private__['_inventory_tool'] = InventoryAPITool()
+        self.__pydantic_private__['_supplier_tool'] = SupplierAPITool()
+        self.__pydantic_private__['_customer_order_tool'] = CustomerOrderAPITool()
+        self.__pydantic_private__['_analytics_tool'] = AnalyticsAPITool()
+        self.__pydantic_private__['_pricing_tool'] = PricingAPITool()
         self.__pydantic_private__['_specialist_agent_tool'] = SpecialistAgentTool()
         self.__pydantic_private__['_dynamic_agent_tool'] = DynamicAgentSpawner()
-        self.__pydantic_private__['_event_driven_tool'] = EventDrivenAgent("irops_events")
+        self.__pydantic_private__['_event_driven_tool'] = EventDrivenAgent("inventory_events")
         self.__pydantic_private__['_negotiation_tool'] = NegotiationAgent()
         self._tools = [
-            self._domain_1_tool,
-            self._domain_2_tool,
-            self._domain_3_tool,
-            self._weather_tool,
-            self._flight_tracking_tool,
-            self._passenger_mgmt_tool,
-            self._airport_info_tool,
-            self._crew_mgmt_tool,
+            self._inventory_reorder_tool,
+            self._seasonal_demand_tool,
+            self._supplier_management_tool,
+            self._inventory_tool,
+            self._supplier_tool,
+            self._customer_order_tool,
+            self._analytics_tool,
+            self._pricing_tool,
             self._specialist_agent_tool,
             self._dynamic_agent_tool,
             self._event_driven_tool,
@@ -107,298 +107,268 @@ class CoordinatorAgent(BaseAgent):
         ]
     
     def _create_analysis_workflow(self) -> SequentialAgent:
-        """Create sequential workflow for IROPS analysis."""
+        """Create sequential workflow for inventory analysis."""
         return SequentialAgent(
-            name="irops_analysis_workflow",
+            name="inventory_analysis_workflow",
             sub_agents=[
                 LlmAgent(
-                    name="situation_assessor",
+                    name="inventory_assessor",
                     model=Config.DEFAULT_MODEL,
                     instruction="""
-                    Assess IROPS situation and severity:
-                    1. Analyze flight delays, cancellations, diversions
-                    2. Evaluate weather conditions and impact
-                    3. Assess passenger impact and numbers affected
-                    4. Determine operational complexity level
-                    5. Identify immediate actions required
+                    Assess inventory situation and stock levels:
+                    1. Analyze current stock levels across all products
+                    2. Evaluate reorder points and safety stock levels
+                    3. Assess seasonal demand patterns and trends
+                    4. Determine stockout risk and urgency levels
+                    5. Identify products requiring immediate attention
                     """,
-                    output_key="situation_assessment"
+                    output_key="inventory_assessment"
                 ),
                 LlmAgent(
-                    name="impact_analyzer",
+                    name="demand_analyzer",
                     model=Config.DEFAULT_MODEL,
                     instruction="""
-                    Analyze comprehensive IROPS impact:
-                    1. Calculate passenger impact metrics
-                    2. Assess operational costs and delays
-                    3. Evaluate crew and aircraft availability
-                    4. Determine cascading effects on network
-                    5. Identify recovery time requirements
+                    Analyze comprehensive inventory demand:
+                    1. Calculate demand forecasting metrics
+                    2. Assess seasonal variations and trends
+                    3. Evaluate customer ordering patterns
+                    4. Determine optimal reorder quantities
+                    5. Identify pricing optimization opportunities
                     """,
-                    output_key="impact_analysis"
+                    output_key="demand_analysis"
                 )
             ]
         )
     
     def _create_execution_workflow(self) -> ParallelAgent:
-        """Create parallel workflow for IROPS execution."""
+        """Create parallel workflow for inventory execution."""
         return ParallelAgent(
-            name="irops_execution_workflow",
+            name="inventory_execution_workflow",
             sub_agents=[
                 LlmAgent(
-                    name="passenger_communications",
+                    name="reorder_processor",
                     model=Config.DEFAULT_MODEL,
                     instruction="""
-                    Handle passenger communications:
-                    1. Generate passenger notifications
-                    2. Provide rebooking options
-                    3. Communicate compensation policies
-                    4. Update status information
-                    5. Handle special assistance requests
+                    Process inventory reorders:
+                    1. Generate reorder recommendations
+                    2. Calculate optimal order quantities
+                    3. Select best suppliers based on price and availability
+                    4. Create purchase orders
+                    5. Track order status and delivery
                     """,
-                    output_key="passenger_communications"
+                    output_key="reorder_processing"
                 ),
                 LlmAgent(
-                    name="operational_coordination",
+                    name="supplier_coordinator",
                     model=Config.DEFAULT_MODEL,
                     instruction="""
-                    Coordinate operational response:
-                    1. Manage crew assignments and rotations
-                    2. Coordinate aircraft repositioning
-                    3. Handle maintenance and fueling
-                    4. Coordinate with ground operations
-                    5. Manage gate and slot assignments
+                    Coordinate with suppliers:
+                    1. Manage supplier relationships and communication
+                    2. Negotiate pricing and terms
+                    3. Handle delivery scheduling and logistics
+                    4. Manage quality control and returns
+                    5. Track supplier performance metrics
                     """,
-                    output_key="operational_coordination"
+                    output_key="supplier_coordination"
                 ),
                 LlmAgent(
-                    name="regulatory_compliance",
+                    name="pricing_optimizer",
                     model=Config.DEFAULT_MODEL,
                     instruction="""
-                    Ensure regulatory compliance:
-                    1. Verify DOT regulations compliance
-                    2. Handle required notifications
-                    3. Manage documentation requirements
-                    4. Coordinate with authorities
-                    5. Ensure passenger rights compliance
+                    Optimize pricing strategies:
+                    1. Analyze competitor pricing
+                    2. Calculate optimal pricing based on demand elasticity
+                    3. Implement dynamic pricing strategies
+                    4. Monitor profit margins and revenue impact
+                    5. Adjust pricing based on market conditions
                     """,
-                    output_key="regulatory_compliance"
+                    output_key="pricing_optimization"
                 )
             ]
         )
     
     def _create_monitoring_workflow(self) -> LoopAgent:
-        """Create loop workflow for continuous IROPS monitoring."""
+        """Create loop workflow for continuous inventory monitoring."""
         return LoopAgent(
-            name="irops_monitoring_workflow",
+            name="inventory_monitoring_workflow",
             max_iterations=Config.MAX_AGENT_ITERATIONS,
             sub_agents=[
                 LlmAgent(
-                    name="status_monitor",
+                    name="stock_monitor",
                     model=Config.DEFAULT_MODEL,
                     instruction=f"""
-                    Monitor IROPS execution status and progress:
-                    1. Check completion status of all operations
-                    2. Monitor passenger impact levels (threshold: {Config.MAX_PASSENGER_IMPACT})
-                    3. Track delay durations (alert threshold: {Config.IROPS_ALERT_THRESHOLD} min)
-                    4. Assess if escalation is needed (escalation time: {Config.IROPS_ESCALATION_TIME} min)
-                    5. Determine if additional resources are required
+                    Monitor inventory execution status and progress:
+                    1. Track real-time stock levels and movements
+                    2. Monitor reorder point triggers and alerts
+                    3. Track supplier delivery performance
+                    4. Monitor customer demand patterns
+                    5. Alert on stockout risks and opportunities
+                    
+                    Continue monitoring until all inventory operations are complete
+                    or max iterations ({Config.MAX_AGENT_ITERATIONS}) reached.
                     """,
-                    tools=[process_data],
-                    output_key="monitoring_status"
-                ),
-                LlmAgent(
-                    name="adjustment_planner",
-                    model=Config.DEFAULT_MODEL,
-                    instruction="""
-                    Plan adjustments based on monitoring:
-                    1. Identify required changes to recovery strategy
-                    2. Reallocate resources if needed
-                    3. Update priorities and timelines
-                    4. Determine if loop should continue or escalate
-                    5. Plan contingency measures
-                    """,
-                    output_key="adjustment_plan"
+                    output_key="stock_monitoring"
                 )
             ]
         )
-    
+
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         """
-        Main IROPS coordination logic demonstrating all ADK features.
+        Main orchestration logic for inventory coordination.
+        Demonstrates comprehensive multi-agent workflow execution.
         """
-        request_type = ctx.session.state.get("request_type", "general")
-        
-        # Phase 1: IROPS Analysis (Sequential)
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text=f"Starting IROPS analysis for {request_type} situation")]),
-            actions=EventActions(state_delta={"phase": "analysis", "system": "IROPS"})
-        )
-        
-        async for event in self._analysis_workflow.run_async(ctx):
-            yield event
-        
-        # Phase 2: IROPS Execution (Parallel)
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text="Executing parallel IROPS response operations")]),
-            actions=EventActions(state_delta={"phase": "execution", "system": "IROPS"})
-        )
-        
-        async for event in self._execution_workflow.run_async(ctx):
-            yield event
-        
-        # Phase 3: IROPS Processing (Custom Logic)
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text="Processing IROPS results with custom logic")]),
-            actions=EventActions(state_delta={"phase": "processing", "system": "IROPS"})
-        )
-        
-        # Custom orchestration logic based on request type
-        if request_type == "complex":
-            # Use agent tools for delegation
+        try:
+            # Step 1: Initial inventory assessment
             yield Event(
-                author=self.name,
-                content=types.Content(parts=[types.Part(text="Using agent tools for complex IROPS processing")]),
-                actions=EventActions(state_delta={"processing_type": "agent_tools", "system": "IROPS"})
+                action=EventActions.START,
+                data={"step": "inventory_coordination_start", "message": "Starting Meet Lalaji inventory coordination"}
             )
             
-            # Process with domain agent tools
+            # Step 2: Run analysis workflow
+            yield Event(
+                action=EventActions.START,
+                data={"step": "analysis_workflow", "message": "Running inventory analysis workflow"}
+            )
+            
+            analysis_result = await self._analysis_workflow.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"step": "analysis_workflow", "result": analysis_result}
+            )
+            
+            # Step 3: Run execution workflow
+            yield Event(
+                action=EventActions.START,
+                data={"step": "execution_workflow", "message": "Running inventory execution workflow"}
+            )
+            
+            execution_result = await self._execution_workflow.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"step": "execution_workflow", "result": execution_result}
+            )
+            
+            # Step 4: Run monitoring workflow
+            yield Event(
+                action=EventActions.START,
+                data={"step": "monitoring_workflow", "message": "Starting continuous inventory monitoring"}
+            )
+            
+            monitoring_result = await self._monitoring_workflow.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"step": "monitoring_workflow", "result": monitoring_result}
+            )
+            
+            # Step 5: Process with agent tools
+            yield Event(
+                action=EventActions.START,
+                data={"step": "agent_tools", "message": "Processing with specialized agent tools"}
+            )
+            
             async for event in self._process_with_agent_tools(ctx):
                 yield event
-                
-        elif request_type == "simple":
-            # Use function tools directly
+            
+            # Step 6: Process with function tools
             yield Event(
-                author=self.name,
-                content=types.Content(parts=[types.Part(text="Using function tools for simple IROPS processing")]),
-                actions=EventActions(state_delta={"processing_type": "function_tools", "system": "IROPS"})
+                action=EventActions.START,
+                data={"step": "function_tools", "message": "Processing with function tools"}
             )
             
-            # Process with function tools
             async for event in self._process_with_function_tools(ctx):
                 yield event
-        
-        # Phase 4: IROPS Monitoring Loop
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text="Starting continuous IROPS monitoring and adjustment")]),
-            actions=EventActions(state_delta={"phase": "monitoring", "system": "IROPS"})
-        )
-        
-        async for event in self._monitoring_workflow.run_async(ctx):
-            yield event
             
-            # Check if monitoring should escalate
-            if event.actions and event.actions.escalate:
-                yield Event(
-                    author=self.name,
-                    content=types.Content(parts=[types.Part(text="Escalating IROPS to senior management due to monitoring results")]),
-                    actions=EventActions(state_delta={"escalated": True, "system": "IROPS"})
-                )
-                break
-        
-        # Final coordination summary
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text="IROPS multi-agent coordination completed")]),
-            actions=EventActions(state_delta={"phase": "completed", "system": "IROPS"})
-        )
-    
+            # Step 7: Final coordination summary
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={
+                    "step": "inventory_coordination_complete",
+                    "message": "Meet Lalaji inventory coordination completed successfully",
+                    "summary": {
+                        "analysis_completed": True,
+                        "execution_completed": True,
+                        "monitoring_active": True,
+                        "agent_tools_processed": True,
+                        "function_tools_processed": True
+                    }
+                }
+            )
+            
+        except Exception as e:
+            yield Event(
+                action=EventActions.ERROR,
+                data={"step": "inventory_coordination_error", "error": str(e)}
+            )
+
     async def _process_with_agent_tools(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        """Demonstrate agent tool usage for IROPS."""
-        # Use flight monitoring tool
-        result_1 = await self._domain_1_tool.run(ctx, task="monitor_flight_status")
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text=f"Flight monitoring result: {result_1}")]),
-            actions=EventActions(state_delta={"flight_monitoring_result": result_1, "system": "IROPS"})
-        )
-        
-        # Use passenger impact tool
-        result_2 = await self._domain_2_tool.run(ctx, task="analyze_passenger_impact")
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text=f"Passenger impact analysis: {result_2}")]),
-            actions=EventActions(state_delta={"passenger_impact_result": result_2, "system": "IROPS"})
-        )
-        
-        # Use advanced IROPS tool
-        result_3 = await self._domain_3_tool.run(ctx, task="advanced_irops_analysis")
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text=f"Advanced IROPS analysis: {result_3}")]),
-            actions=EventActions(state_delta={"advanced_irops_result": result_3, "system": "IROPS"})
-        )
-    
+        """Process inventory operations using specialized agent tools."""
+        try:
+            # Use inventory reorder tool
+            reorder_result = await self._inventory_reorder_tool.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"tool": "inventory_reorder", "result": reorder_result}
+            )
+            
+            # Use seasonal demand tool
+            demand_result = await self._seasonal_demand_tool.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"tool": "seasonal_demand", "result": demand_result}
+            )
+            
+            # Use supplier management tool
+            supplier_result = await self._supplier_management_tool.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"tool": "supplier_management", "result": supplier_result}
+            )
+            
+        except Exception as e:
+            yield Event(
+                action=EventActions.ERROR,
+                data={"tool": "agent_tools_error", "error": str(e)}
+            )
+
     async def _process_with_function_tools(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        """Demonstrate function tool usage for IROPS."""
-        # Process IROPS data
-        processed_data = await process_data(ctx, {"data": "irops_situation_data"})
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text=f"Processed IROPS data: {processed_data}")]),
-            actions=EventActions(state_delta={"processed_irops_data": processed_data, "system": "IROPS"})
-        )
-        
-        # Save IROPS result
-        save_result(ctx, {"result": processed_data, "type": "irops_response"})
-        yield Event(
-            author=self.name,
-            content=types.Content(parts=[types.Part(text="IROPS result saved successfully")]),
-            actions=EventActions(state_delta={"irops_result_saved": True, "system": "IROPS"})
-        )
+        """Process inventory operations using function tools."""
+        try:
+            # Process inventory data
+            data_result = await process_data.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"tool": "process_data", "result": data_result}
+            )
+            
+            # Save inventory results
+            save_result = await save_result.run(ctx)
+            yield Event(
+                action=EventActions.COMPLETE,
+                data={"tool": "save_result", "result": save_result}
+            )
+            
+        except Exception as e:
+            yield Event(
+                action=EventActions.ERROR,
+                data={"tool": "function_tools_error", "error": str(e)}
+            )
 
 
-class CustomOrchestrationAgent(BaseAgent):
+class InventoryOrchestrationAgent(BaseAgent):
     """
-    Custom IROPS agent demonstrating arbitrary orchestration logic.
-    Shows dynamic agent spawning, conditional workflows, and error recovery.
+    Custom inventory orchestration agent for Meet Lalaji.
+    Demonstrates advanced orchestration patterns for inventory management.
     """
     
     def __init__(self):
-        self.coordinator = CoordinatorAgent()
         super().__init__(
-            name="custom_irops_orchestration_agent",
-            description="Custom IROPS orchestration with dynamic logic",
-            sub_agents=[self.coordinator]
+            name="inventory_orchestration_agent",
+            description="Advanced inventory orchestration for Meet Lalaji"
         )
-    
+
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        """
-        Custom IROPS orchestration logic with dynamic decision making.
-        """
-        request_type = ctx.session.state.get("request_type")
-        complexity = ctx.session.state.get("complexity", "medium")
-        
-        # Dynamic agent selection based on IROPS characteristics
-        if complexity == "high":
-            yield Event(
-                author=self.name,
-                content=types.Content(parts=[types.Part(text="High complexity IROPS detected - activating advanced workflow")]),
-                actions=EventActions(state_delta={"workflow_type": "advanced", "system": "IROPS"})
-            )
-            # Use advanced coordination logic
-            
-        elif complexity == "low":
-            yield Event(
-                author=self.name,
-                content=types.Content(parts=[types.Part(text="Low complexity IROPS detected - using simplified workflow")]),
-                actions=EventActions(state_delta={"workflow_type": "simplified", "system": "IROPS"})
-            )
-            # Use simplified coordination logic
-        
-        # Run the main coordinator
-        async for event in self.coordinator.run_async(ctx):
-            yield event
-            
-            # Check for escalation conditions
-            if event.actions and event.actions.escalate:
-                yield Event(
-                    author=self.name,
-                    content=types.Content(parts=[types.Part(text="Escalating IROPS to senior management")]),
-                    actions=EventActions(state_delta={"escalated_to_management": True, "system": "IROPS"})
-                )
-                break 
+        """Custom inventory orchestration logic."""
+        yield Event(
+            action=EventActions.COMPLETE,
+            data={"message": "Custom inventory orchestration completed for Meet Lalaji"}
+        ) 

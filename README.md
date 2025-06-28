@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/badge/Real--time%20Analytics-Yes-10b981?style=flat-square"/>
   <img src="https://img.shields.io/badge/Multi--Store%20Support-Yes-f59e42?style=flat-square"/>
   <img src="https://img.shields.io/badge/Cloud%20Ready-Vercel-ef4444?style=flat-square"/>
+  <img src="https://img.shields.io/badge/LangChain%20%2B%20LangGraph%20%2B%20ADK-Enabled-6366f1?style=flat-square"/>
 </p>
 
 ---
@@ -18,11 +19,11 @@
 
 > 🚀 **Meet Lalaji** is a comprehensive AI-powered inventory management and analytics platform designed to transform how retailers and distributors manage their operations. Our conversational AI, real-time analytics, and predictive insights deliver exceptional ROI and operational efficiency.
 
-[![Meet Lalaji](https://img.shields.io/badge/Meet%20Lalaji-AI%20Inventory%20Management-blueviolet?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername/meet-lalaji)
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/meet-lalaji?style=flat-square)](https://github.com/yourusername/meet-lalaji/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/meet-lalaji?style=flat-square)](https://github.com/yourusername/meet-lalaji/network)
+[![Meet Lalaji](https://img.shields.io/badge/Meet%20Lalaji-AI%20Inventory%20Management-blueviolet?style=for-the-badge&logo=github&logoColor=white)](https://github.com/jaiswalarthi03/lalaji)
+[![GitHub stars](https://img.shields.io/github/stars/jaiswalarthi03/lalaji?style=flat-square)](https://github.com/jaiswalarthi03/lalaji/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/jaiswalarthi03/lalaji?style=flat-square)](https://github.com/jaiswalarthi03/lalaji/network)
 
-**Meet Lalaji** is a modern, AI-powered inventory management and analytics platform designed to automate, optimize, and simplify inventory operations for retailers and distributors. It features conversational chatbots, real-time analytics, predictive insights, and multi-store management capabilities.
+**Meet Lalaji** is a modern, AI-powered inventory management and analytics platform designed to automate, optimize, and simplify inventory operations for retailers and distributors. It features conversational chatbots, real-time analytics, predictive insights, multi-store management capabilities, and enterprise-grade AI integration with LangChain, LangGraph, and ADK.
 
 ---
 
@@ -39,30 +40,30 @@
 
 ## 📸 <span style="color:#7c3aed">Screenshots & Demo</span>
 
-<h1> Our App is available here => https://your-app-url.com </h1>
+<h1> Our App is available here => https://lalaji.vercel.app/ </h1>
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x450/10b981/ffffff?text=Lalaji+Dashboard+Overview" alt="Meet Lalaji Screenshot 1" width="800"/>
+  <img src="screenshot/1.png" alt="Meet Lalaji Screenshot 1" width="800"/>
   <p><em>Lalaji Dashboard Overview - Real-time inventory tracking and analytics</em></p>
 </div>
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x450/f59e42/ffffff?text=Lalaji+Customer+Chat" alt="Meet Lalaji Screenshot 2" width="800"/>
+  <img src="screenshot/2.png" alt="Meet Lalaji Screenshot 2" width="800"/>
   <p><em>Lalaji Customer Chat Interface - Natural language ordering and support</em></p>
 </div>
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x450/6366f1/ffffff?text=Lalaji+Distributor+Chat" alt="Meet Lalaji Screenshot 3" width="800"/>
+  <img src="screenshot/3.png" alt="Meet Lalaji Screenshot 3" width="800"/>
   <p><em>Lalaji Distributor Chat Interface - Automated restocking and communication</em></p>
 </div>
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x450/ef4444/ffffff?text=Lalaji+Analytics+Dashboard" alt="Meet Lalaji Screenshot 4" width="800"/>
+  <img src="screenshot/4.png" alt="Meet Lalaji Screenshot 4" width="800"/>
   <p><em>Lalaji Analytics Dashboard - Sales trends and demand forecasting</em></p>
 </div>
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x450/7c3aed/ffffff?text=Lalaji+Seasonal+Demand" alt="Meet Lalaji Screenshot 5" width="800"/>
+  <img src="screenshot/5.png" alt="Meet Lalaji Screenshot 5" width="800"/>
   <p><em>Lalaji Seasonal Demand Report - Predictive analytics and trend analysis</em></p>
 </div>
 
@@ -79,13 +80,25 @@
 
 ## 🤖 <span style="color:#6366f1">Meet Lalaji AI-Powered Features</span>
 
-### Advanced AI Integration (LangChain + LangGraph + ADK)
+### Enterprise AI Stack (LangChain + LangGraph + ADK)
 
-**Enterprise-Grade AI Stack:**
-- **LangChain Integration:** Composable AI workflows and chains for complex business logic
-- **LangGraph Orchestration:** Multi-step workflow management with state tracking
-- **ADK Agents:** Specialized AI agents for domain-specific tasks and monitoring
-- **Workflow Orchestration:** Complete AI workflows combining all components seamlessly
+**LangChain Integration:**
+- **Chain Management:** Create and execute reusable AI workflows for complex business logic
+- **Tool Integration:** Connect with external APIs, databases, and services seamlessly
+- **Memory Management:** Maintain context across conversations and sessions
+- **Output Parsing:** Structured data extraction from AI responses with validation
+
+**LangGraph Orchestration:**
+- **Workflow Management:** Coordinate multiple AI components with state tracking
+- **Branching Logic:** Handle conditional execution paths and decision trees
+- **Error Recovery:** Graceful handling of failures with automatic retry mechanisms
+- **State Persistence:** Track workflow progress and maintain context across executions
+
+**ADK (Agent Development Kit):**
+- **Specialized Agents:** Domain-specific AI agents for inventory, customer service, and analytics
+- **State Management:** Persistent agent context with memory and tool usage tracking
+- **Performance Monitoring:** Real-time agent effectiveness and utilization metrics
+- **Custom Tool Framework:** Extensible tool system for data processing and validation
 
 **AI-Powered Workflows:**
 - **Inventory Management Workflow:** LangChain analysis + LangGraph orchestration + ADK monitoring
@@ -221,6 +234,7 @@
 | ⚡ <b>Real-Time Analytics</b> | MongoDB + Chart.js + Predictive Models | Instant insights and forecasting |
 | 🧠 <b>Multi-Store Intelligence</b> | Centralized AI + Local Currency Support | Global scalability with local focus |
 | 📋 <b>Voice Assistant Ready</b> | Voice API integration capabilities | Future-ready hands-free operation |
+| 🔗 <b>Enterprise AI Stack</b> | LangChain + LangGraph + ADK Integration | Advanced workflow orchestration |
 
 ---
 
@@ -262,6 +276,7 @@
 | ⚡ <b>Real-time Analytics</b> | Instant insights and predictive modeling | Faster decision making |
 | 🧠 <b>Multi-store Intelligence</b> | Centralized AI with local adaptation | Scalable global operations |
 | 📋 <b>Voice Integration</b> | Hands-free inventory management | Improved operational efficiency |
+| 🔗 <b>Enterprise AI Stack</b> | LangChain + LangGraph + ADK workflows | Advanced business process automation |
 
 ---
 
@@ -276,8 +291,8 @@
 ### Local Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/meet-lalaji.git
-cd meet-lalaji
+git clone https://github.com/jaiswalarthi03/lalaji.git
+cd lalaji
 
 # Install dependencies
 pip install -r requirements.txt
@@ -321,27 +336,14 @@ vercel --prod
 
 ### Configuration Options
 
-**Enable ADK Integration (Optional):**
-```python
-# In config.py
-ADK_CONFIG = {
-    'ENABLED': True,
-    'ENABLE_DOMAIN_AGENTS': True,
-    'ENABLE_WORKFLOW_AGENTS': True,
-    'DEFAULT_MODEL': 'gemini-2.0-flash-exp',
-    'MAX_AGENT_ITERATIONS': 10,
-    'AGENT_TIMEOUT': 30
-}
-```
-
 **Voice Features Configuration:**
 ```python
 # In config.py
 SHOW_VOICE_COMMANDS = True  # Enable voice command features
 LANGUAGE_OPTIONS = [
     {"code": "english", "name": "English", "voice": "Mark"},
-    {"code": "hindi", "name": "Hindi", "voice": "9f6262e3-1b03-4a0b-9921-50b9cff66a43"},
-    {"code": "tamil", "name": "Tamil", "voice": "4c6a414f-34d5-4633-9d47-f25949554ca2"}
+    {"code": "hindi", "name": "Hindi", "voice": "your-hindi-voice-id-here"},
+    {"code": "tamil", "name": "Tamil", "voice": "your-tamil-voice-id-here"}
 ]
 ```
 
@@ -365,6 +367,12 @@ The application automatically creates the necessary MongoDB collections:
 - `units` - Measurement units
 - `competitors` - Competitor information
 - `currency_conversions` - Currency conversion rates
+- `ai_chains` - LangChain workflow configurations
+- `ai_graphs` - LangGraph workflow configurations
+- `ai_agents` - ADK agent configurations
+- `ai_chain_executions` - LangChain execution history
+- `ai_graph_executions` - LangGraph execution history
+- `ai_agent_executions` - ADK agent execution history
 
 ---
 
@@ -383,7 +391,7 @@ The application automatically creates the necessary MongoDB collections:
 - `GET /api/customer/<id>` - Get customer details
 - `GET /api/distributor/<id>` - Get distributor details
 
-### Advanced AI Integration (LangChain + LangGraph + ADK)
+### Enterprise AI Integration (LangChain + LangGraph + ADK)
 
 **System Status & Workflows:**
 - `GET /api/advanced-ai/status` - Get advanced AI system status
@@ -495,7 +503,7 @@ The name "Meet Lalaji" represents the quintessential local shop owner who knows 
 - **Session Management** with Flask sessions for conversation history and user context tracking
 - **RESTful API Design** with comprehensive endpoint coverage for all business operations
 
-**Advanced AI Integration:**
+**Enterprise AI Integration:**
 - **LangChain Integration** for composable AI workflows and chains with tool integration and memory management
 - **LangGraph Orchestration** for multi-step workflow management with state tracking and branching logic
 - **ADK (Agent Development Kit)** for specialized AI agents with persistent state management and performance monitoring
@@ -552,7 +560,7 @@ The name "Meet Lalaji" represents the quintessential local shop owner who knows 
 ### Challenges we ran into
 
 **Technical Challenges:**
-- **Advanced AI Integration:** Integrating LangChain, LangGraph, and ADK into a cohesive system while maintaining performance and reliability required complex orchestration and state management
+- **Enterprise AI Integration:** Integrating LangChain, LangGraph, and ADK into a cohesive system while maintaining performance and reliability required complex orchestration and state management
 - **Conversational AI Integration:** Integrating Google Gemini AI with proper context management and conversation history tracking required complex session handling and prompt engineering
 - **RAG System Implementation:** Building a reliable retrieval-augmented generation system with predefined query matching and fallback responses while maintaining natural conversation flow
 - **Multi-Store Architecture:** Implementing seamless store switching with currency conversion, localized branding, and cross-store analytics while maintaining data integrity
@@ -673,7 +681,7 @@ Our ultimate goal is to democratize access to enterprise-level inventory managem
 
 ## 🧠 <span style="color:#f59e42">Meet Lalaji AI & Technology Integration</span>
 
-### Advanced AI Stack (LangChain + LangGraph + ADK)
+### Enterprise AI Stack (LangChain + LangGraph + ADK)
 
 **LangChain Integration:**
 - **Chain Management:** Create and execute reusable AI workflows for complex business logic

@@ -1,135 +1,213 @@
-# ADK Integration for InventoryMaster
+# Meet Lalaji ADK (Agent Development Kit)
 
-This directory contains Google ADK (Agent Development Kit) agents that can be optionally integrated with InventoryMaster for advanced AI capabilities.
+Advanced AI agents for inventory management operations in Meet Lalaji.
 
 ## Overview
 
-The ADK integration provides:
-- **Domain Agents**: Specialized agents for inventory monitoring, customer impact analysis, and advanced analytics
-- **Workflow Agents**: Sequential, parallel, and loop agents for complex operations
-- **Advanced Agents**: Coordinator agents for orchestrating multiple agents
-- **Tools**: Custom tools for data processing, validation, and metrics calculation
+The ADK provides specialized AI agents for inventory management, demand forecasting, supplier coordination, and automated reordering. These agents work together to optimize inventory operations and reduce stockouts.
+
+## Core Agents
+
+### Inventory Coordinator Agent
+- **File**: `coordinator_agent.py`
+- **Purpose**: Main orchestration agent for inventory operations
+- **Features**:
+  - Coordinates multiple specialized agents
+  - Manages sequential and parallel workflows
+  - Handles error recovery and monitoring
+  - Integrates with external APIs and tools
+
+### Inventory Reorder Agent
+- **File**: `inventory_reorder_agent.py`
+- **Purpose**: Manages stock level monitoring and reorder recommendations
+- **Features**:
+  - Real-time stock level monitoring
+  - Reorder point calculation and alerts
+  - Safety stock level management
+  - Economic order quantity (EOQ) calculations
+  - Lead time analysis and planning
+
+### Seasonal Demand Agent
+- **File**: `seasonal_demand_agent.py`
+- **Purpose**: Analyzes demand patterns and provides forecasting
+- **Features**:
+  - Historical demand pattern analysis
+  - Seasonal trend identification and forecasting
+  - Holiday and event impact assessment
+  - Demand elasticity analysis
+  - Inventory planning recommendations
+
+### Supplier Management Agent
+- **File**: `supplier_management_agent.py`
+- **Purpose**: Manages supplier relationships and procurement
+- **Features**:
+  - Supplier relationship management
+  - Order coordination and tracking
+  - Price negotiation and optimization
+  - Delivery scheduling and logistics
+  - Quality control and returns management
+
+## Workflow Agents
+
+### Inventory Analysis Workflow
+- **File**: `workflow_agents.py`
+- **Purpose**: Sequential workflow for comprehensive inventory analysis
+- **Steps**:
+  1. Stock level analysis
+  2. Demand pattern analysis
+  3. Supplier availability checking
+
+### Inventory Execution Workflow
+- **File**: `workflow_agents.py`
+- **Purpose**: Parallel workflow for concurrent inventory operations
+- **Steps**:
+  1. Reorder processing
+  2. Supplier coordination
+  3. Pricing optimization
+
+### Inventory Monitoring Workflow
+- **File**: `workflow_agents.py`
+- **Purpose**: Continuous monitoring of inventory operations
+- **Features**:
+  - Real-time stock level tracking
+  - Reorder point monitoring
+  - Supplier delivery tracking
+  - Demand pattern monitoring
+
+### Seasonal Demand Workflow
+- **File**: `workflow_agents.py`
+- **Purpose**: Sequential workflow for seasonal demand analysis
+- **Steps**:
+  1. Historical pattern analysis
+  2. Forecast generation
+  3. Inventory planning
+
+### Supplier Management Workflow
+- **File**: `workflow_agents.py`
+- **Purpose**: Parallel workflow for supplier relationship management
+- **Steps**:
+  1. Supplier evaluation
+  2. Relationship management
+  3. Procurement optimization
 
 ## Configuration
 
-ADK integration is **disabled by default** and can be enabled through configuration:
-
-```python
-# In config.py
-ADK_CONFIG = {
-    'ENABLED': True,  # Enable ADK agents
-    'ENABLE_DOMAIN_AGENTS': True,  # Enable domain-specific agents
-    'ENABLE_WORKFLOW_AGENTS': True,  # Enable workflow agents
-    'ENABLE_ADVANCED_AGENTS': False,  # Enable advanced agents (use with caution)
-}
+### Environment Variables
+```bash
+GOOGLE_API_KEY=your-google-api-key-here
 ```
 
-## Available Agents
-
-### Domain Agents
-- **DomainAgent1** (`domain_agent_1.py`): Inventory monitoring and stock level analysis
-- **DomainAgent2** (`domain_agent_2.py`): Customer impact analysis and validation
-- **DomainAgent3** (`domain_agent_3.py`): Advanced analytics with external API integration
-
-### Workflow Agents
-- **SequentialAgent**: Execute agents in sequence
-- **ParallelAgent**: Execute agents in parallel
-- **LoopAgent**: Execute agents in a loop with conditions
-
-### Advanced Agents
-- **CoordinatorAgent**: Orchestrate multiple agents for complex scenarios
-- **SessionPersistenceAgent**: Maintain conversation context across sessions
-- **EventHandlingRobustAgent**: Handle real-time events and triggers
-
-## API Endpoints
-
-When ADK is enabled, the following endpoints become available:
-
-### Status and Configuration
-- `GET /api/adk/status` - Get ADK integration status
-- `GET /api/adk/agents` - List available agents
-- `GET /api/adk/config` - Get ADK configuration
-
-### Agent Operations
-- `POST /api/adk/analyze-inventory` - Analyze inventory with ADK agents
-- `POST /api/adk/handle-customer-inquiry` - Handle customer inquiries with agents
-- `POST /api/adk/coordinate-distributor` - Coordinate with distributors using agents
-- `POST /api/adk/run-agent/<agent_name>` - Run a specific agent
-
-## Usage Examples
-
-### Enable ADK Integration
+### Agent Configuration
 ```python
 # In config.py
 ADK_CONFIG = {
     'ENABLED': True,
-    'ENABLE_DOMAIN_AGENTS': True,
     'DEFAULT_MODEL': 'gemini-2.0-flash-exp',
     'MAX_AGENT_ITERATIONS': 10,
-    'AGENT_TIMEOUT': 30
+    'AGENT_TIMEOUT': 30,
+    'ENABLE_ADVANCED_AGENTS': True,
+    'ENABLE_DOMAIN_AGENTS': True,
+    'ENABLE_WORKFLOW_AGENTS': True,
 }
 ```
 
-### Use ADK Service in Code
+## Usage Examples
+
+### Basic Agent Usage
 ```python
-from services.adk_integration_service import adk_service
+from ADK.inventory_reorder_agent import InventoryReorderAgent
+from ADK.seasonal_demand_agent import SeasonalDemandAgent
+from ADK.supplier_management_agent import SupplierManagementAgent
 
-# Check if ADK is enabled
-if adk_service.is_enabled():
-    # Analyze inventory with agents
-    result = await adk_service.analyze_inventory_with_agents(inventory_data)
-    
-    # Handle customer inquiry with agents
-    result = await adk_service.handle_customer_inquiry_with_agents(inquiry, context)
+# Initialize agents
+reorder_agent = InventoryReorderAgent()
+demand_agent = SeasonalDemandAgent()
+supplier_agent = SupplierManagementAgent()
+
+# Use agents for inventory operations
+reorder_result = await reorder_agent.run(inventory_data)
+demand_forecast = await demand_agent.run(historical_data)
+supplier_info = await supplier_agent.run(supplier_data)
 ```
 
-### API Usage
-```bash
-# Get ADK status
-curl -X GET http://localhost:5000/api/adk/status
+### Workflow Usage
+```python
+from ADK.workflow_agents import InventoryAnalysisWorkflow, InventoryExecutionWorkflow
 
-# Analyze inventory with ADK agents
-curl -X POST http://localhost:5000/api/adk/analyze-inventory \
-  -H "Content-Type: application/json" \
-  -d '{"inventory_data": {"products": [], "metrics": {}}}'
+# Create workflows
+analysis_workflow = InventoryAnalysisWorkflow()
+execution_workflow = InventoryExecutionWorkflow()
 
-# Run specific agent
-curl -X POST http://localhost:5000/api/adk/run-agent/inventory_monitor \
-  -H "Content-Type: application/json" \
-  -d '{"context": {"action": "check_stock_levels"}}'
+# Run workflows
+analysis_result = await analysis_workflow.run(inventory_data)
+execution_result = await execution_workflow.run(analysis_result)
 ```
 
-## Dependencies
+### Coordinator Usage
+```python
+from ADK.coordinator_agent import InventoryCoordinatorAgent
 
-The ADK integration requires:
-- Google ADK framework (if available)
-- Async support for agent operations
-- Proper API key configuration for Gemini models
+# Initialize coordinator
+coordinator = InventoryCoordinatorAgent()
 
-## Notes
+# Run complete inventory coordination
+result = await coordinator.run(inventory_context)
+```
 
-- **Optional Integration**: ADK agents are completely optional and don't affect core functionality
-- **Graceful Degradation**: If ADK is disabled or unavailable, the system continues to work normally
-- **Performance**: ADK agents may add latency to operations, so use judiciously
-- **Configuration**: All ADK features can be enabled/disabled through configuration
+## Integration with Meet Lalaji
 
-## Troubleshooting
+The ADK agents integrate seamlessly with the main Meet Lalaji system:
 
-### Common Issues
+1. **Inventory Management**: Agents monitor stock levels and trigger reorders
+2. **Demand Forecasting**: Agents analyze patterns and predict future demand
+3. **Supplier Coordination**: Agents manage relationships and optimize procurement
+4. **Workflow Orchestration**: Agents coordinate complex inventory operations
 
-1. **Import Errors**: If you see import errors for ADK modules, ensure the Google ADK framework is properly installed
-2. **Timeout Errors**: Increase `AGENT_TIMEOUT` in configuration if agents are timing out
-3. **Memory Issues**: Reduce `MAX_AGENT_ITERATIONS` if experiencing memory problems
-4. **API Errors**: Ensure Gemini API key is properly configured
+## API Endpoints
 
-### Logging
+The ADK provides REST API endpoints for agent operations:
 
-ADK operations are logged with the `services.adk_integration_service` logger. Check logs for detailed error information.
+- `POST /api/adk/agents` - Create new agent
+- `POST /api/adk/agents/<id>/execute` - Execute agent
+- `GET /api/adk/executions` - Get execution history
+- `POST /api/ai-workflows/inventory-management` - Run inventory workflow
+- `POST /api/ai-workflows/customer-service` - Run customer service workflow
+- `POST /api/ai-workflows/demand-analysis` - Run demand analysis workflow
 
-## Future Enhancements
+## Monitoring and Analytics
 
-- Integration with actual database operations
-- Real-time event handling
-- Advanced agent orchestration
-- Custom tool development
-- Performance optimization 
+The ADK includes comprehensive monitoring:
+
+- **Agent Performance**: Track agent effectiveness and response times
+- **Workflow Analytics**: Monitor workflow completion rates and bottlenecks
+- **Error Tracking**: Log and analyze agent errors and failures
+- **Resource Usage**: Monitor API usage and costs
+
+## Security
+
+- **API Key Management**: Secure handling of API keys and credentials
+- **Data Privacy**: Protection of inventory and supplier data
+- **Access Control**: Role-based access to agent operations
+- **Audit Logging**: Comprehensive logging of all agent activities
+
+## Development
+
+### Adding New Agents
+1. Create agent class inheriting from `LlmAgent`
+2. Define agent capabilities and tools
+3. Add agent to coordinator configuration
+4. Update API endpoints and documentation
+
+### Custom Workflows
+1. Define workflow nodes and edges
+2. Implement state management
+3. Add error handling and monitoring
+4. Test with sample inventory data
+
+## Support
+
+For questions and support:
+- Check the main Meet Lalaji documentation
+- Review agent logs and error messages
+- Test with sample data before production use
+- Monitor agent performance and adjust configurations 
