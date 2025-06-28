@@ -72,12 +72,12 @@
 ## 🏗️ <span style="color:#10b981">Meet Lalaji System Architecture</span>
 
 <div align="center">
-  <img src="architecture.png" alt="Meet Lalaji System Architecture" width="100%"/>
+  <img src="https://raw.githubusercontent.com/jaiswalarthi03/lalaji/main/architecture.png" alt="Meet Lalaji System Architecture" width="100%"/>
   <p><em>Meet Lalaji System Architecture Overview</em></p>
 </div>
 
 <div align="center">
-  <img src="architecture2.png" alt="Meet Lalaji Advanced Architecture" width="100%"/>
+  <img src="https://raw.githubusercontent.com/jaiswalarthi03/lalaji/main/architecture2.png" alt="Meet Lalaji Advanced Architecture" width="100%"/>
   <p><em>Meet Lalaji Advanced AI & Cloud Architecture</em></p>
 </div>
 
@@ -792,4 +792,28 @@ Our ultimate goal is to democratize access to enterprise-level inventory managem
 - **Environment Configuration:** Flexible configuration management
 - **Scalability:** Designed for horizontal scaling and load balancing
 - **Monitoring:** Built-in health checks and performance monitoring
-- **AI Monitoring:** Real-time AI system health monitoring and alerting 
+- **AI Monitoring:** Real-time AI system health monitoring and alerting
+
+<!-- SOCIAL GOOD HACKATHON IMPACT -->
+
+# 🚀 Meet Lalaji: Social Good Impact & AlgoArena Hackathon
+
+**As the creator of Meet Lalaji, I built this platform to directly address the core theme of the AlgoArena Hackathon: _For Social Good_.**
+
+## Why Meet Lalaji is for Social Good
+
+- **Empowering Small Businesses:** Lalaji is designed to level the playing field for local retailers and distributors, giving them access to advanced AI-powered inventory management tools that were previously only available to large corporations. This helps small businesses thrive, supports local economies, and creates more equitable opportunities.
+
+- **Reducing Waste & Increasing Efficiency:** By providing real-time analytics, predictive demand forecasting, and automated restocking, Lalaji helps businesses minimize inventory waste and avoid costly stockouts. This not only saves money but also has a positive environmental impact by reducing unnecessary overstock and spoilage.
+
+- **Accessibility & Inclusion:** With multi-language support and voice-enabled features, Lalaji is accessible to users of all backgrounds, including those with limited literacy or disabilities. This ensures that technology benefits everyone, not just the tech-savvy.
+
+- **Real-World Problem Solving:** Lalaji tackles the daily operational challenges faced by millions of small retailers and distributors, automating manual processes, reducing paperwork, and enabling data-driven decisions that improve livelihoods.
+
+- **Scalable Social Impact:** The platform is cloud-native and can be deployed globally, making it possible to help small businesses in underserved regions access modern tools and insights.
+
+## Why This Matters for AlgoArena
+
+- **Directly aligned with the hackathon's 'For Social Good' theme**: Lalaji is not just a tech demo—it's a real, working solution to real-world problems that matter.
+- **Ready for Impact:** The app is live ([lalaji.vercel.app](https://lalaji.vercel.app/)), open source ([GitHub](https://github.com/jaiswalarthi03/lalaji)), and already making a difference.
+- **Built for the Future:** With a focus on sustainability, accessibility, and empowerment, Lalaji is designed to scale and adapt to the needs of communities everywhere. 
