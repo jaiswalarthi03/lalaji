@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo    Meet Lalaji - GitHub Push Script
+echo    Meet Lalaji - Auto GitHub Push
 echo ========================================
 echo.
 
@@ -9,7 +9,6 @@ git status >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: Not in a git repository!
     echo Please run this script from your project directory.
-    pause
     exit /b 1
 )
 
@@ -17,24 +16,25 @@ if %errorlevel% neq 0 (
 git diff --quiet
 if %errorlevel% equ 0 (
     echo No changes detected. Nothing to commit.
-    echo.
-    pause
     exit /b 0
 )
 
-:: Show current status
+:: Generate timestamp for commit message
+for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set "dt=%%a"
+set "YY=%dt:~2,2%" & set "YYYY=%dt:~0,4%" & set "MM=%dt:~4,2%" & set "DD=%dt:~6,2%"
+set "HH=%dt:~8,2%" & set "Min=%dt:~10,2%" & set "Sec=%dt:~12,2%"
+set "timestamp=%YYYY%-%MM%-%DD% %HH%:%Min%:%Sec%"
+
+:: Set automatic commit message
+set commit_message="Auto Update - Meet Lalaji AI Inventory Management - %timestamp%"
+
 echo Current Git Status:
 echo ----------------------------------------
 git status --short
 echo.
 
-:: Ask for commit message
-set /p commit_message="Enter commit message (or press Enter for default): "
-if "%commit_message%"=="" set commit_message="Update Meet Lalaji - AI Inventory Management"
-
-echo.
 echo ========================================
-echo Starting Git Operations...
+echo Starting Automatic Git Operations...
 echo ========================================
 
 :: Add all files
@@ -43,7 +43,6 @@ echo 1. Adding files to staging area...
 git add .
 if %errorlevel% neq 0 (
     echo ERROR: Failed to add files!
-    pause
     exit /b 1
 )
 echo ✓ Files added successfully
@@ -54,7 +53,6 @@ echo 2. Committing changes...
 git commit -m %commit_message%
 if %errorlevel% neq 0 (
     echo ERROR: Failed to commit changes!
-    pause
     exit /b 1
 )
 echo ✓ Changes committed successfully
@@ -70,7 +68,6 @@ if %errorlevel% neq 0 (
     echo - Check your internet connection
     echo - Verify your GitHub credentials
     echo - Make sure you have write access to the repository
-    pause
     exit /b 1
 )
 
@@ -84,5 +81,5 @@ echo Live App: https://lalaji.vercel.app/
 echo.
 echo Commit Message: %commit_message%
 echo.
-
-pause 
+echo Auto-push completed at %timestamp%
+echo. 

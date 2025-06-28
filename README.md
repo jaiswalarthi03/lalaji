@@ -72,8 +72,13 @@
 ## 🏗️ <span style="color:#10b981">Meet Lalaji System Architecture</span>
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x450/6366f1/ffffff?text=Meet+Lalaji+System+Architecture" alt="Meet Lalaji System Architecture" width="800"/>
-  <p><em>Meet Lalaji System Architecture - Flask backend, MongoDB database, AI integration</em></p>
+  <img src="architecture.png" alt="Meet Lalaji System Architecture" width="100%"/>
+  <p><em>Meet Lalaji System Architecture Overview</em></p>
+</div>
+
+<div align="center">
+  <img src="architecture2.png" alt="Meet Lalaji Advanced Architecture" width="100%"/>
+  <p><em>Meet Lalaji Advanced AI & Cloud Architecture</em></p>
 </div>
 
 ---
