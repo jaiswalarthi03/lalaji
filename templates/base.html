@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - {{ active_store.store_name }}.ai</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flag-icons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar.css') }}">
+    
+    <!-- Ultravox client library -->
+    <script type="module">
+        let initAttempts = 0;
+        const maxAttempts = 5;
+        
+        async function initUltravox() {
+            try {
+                const module = await import('https://esm.sh/ultravox-client');
+                window.UltravoxSession = module.UltravoxSession;
+                console.log("Successfully loaded Ultravox client module");
+                // Dispatch event to notify components that Ultravox is ready
+                window.dispatchEvent(new Event('ultravox_ready'));
+            } catch (error) {
+                console.error("Failed to load Ultravox client module:", error);
+                if (initAttempts < maxAttempts) {
+                    initAttempts++;
+                    console.log(`Retrying Ultravox initialization (attempt ${initAttempts}/${maxAttempts})...`);
+                    setTimeout(initUltravox, 1000);
+                }
+            }
+        }
+
+        // Start initialization when DOM is loaded
+        window.addEventListener('DOMContentLoaded', initUltravox);
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                    <span class="store-name">{{ active_store.store_name }}</span><span class="logo-dot">.ai</span>
+                </a>
+                
+                <!-- Country Flag Dropdown -->
+                <div class="flag-dropdown dropdown me-3">
+                    <button class="btn dropdown-toggle" type="button" id="storeFlagsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if active_store %}
+                            <img id="currentFlagIcon" src="{{ url_for('static', filename='images/flags/' + active_store.country_code.lower() + '.png') }}" alt="{{ active_store.country_code }} flag" style="width: 28px; height: 20px; object-fit: cover; border-radius: 3px;">
+                        {% else %}
+                            <img id="currentFlagIcon" src="{{ url_for('static', filename='images/flags/us.png') }}" alt="US flag" style="width: 28px; height: 20px; object-fit: cover; border-radius: 3px;">
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="storeFlagsDropdown">
+                        {% for store in all_stores %}
+                        <li>
+                            <a class="dropdown-item flag-button {% if store.is_active %}active{% endif %}" href="#" data-country-code="{{ store.country_code }}">
+                                <img src="{{ url_for('static', filename='images/flags/' + store.country_code.lower() + '.png') }}" alt="{{ store.country_code }} flag" style="width: 22px; height: 16px; object-fit: cover; border-radius: 2px; margin-right: 6px;">
+                                {{ store.country_name }} ({{ store.store_name }})
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}">
+                                <i class="fas fa-home"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.reports' %}active{% endif %}" href="{{ url_for('main.reports') }}">
+                                <i class="fas fa-chart-bar"></i> Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.inventory' %}active{% endif %}" href="{{ url_for('main.inventory') }}">
+                                <i class="fas fa-boxes"></i> Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.settings' %}active{% endif %}" href="{{ url_for('main.settings') }}">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Voice Chat Component - Only show if enabled -->
+        {% if config.SHOW_VOICE_COMMANDS %}
+        <div class="voice-chat-component" id="voiceChatComponent">
+            <div class="voice-chat-toggle" onclick="toggleVoiceChat()">
+                <i class="fas fa-microphone"></i>
+            </div>
+            
+            <div class="voice-chat-panel">
+                <div class="voice-chat-header">
+                    <h5>Voice Assistant</h5>
+                    <button class="btn-close" onclick="toggleVoiceChat()"></button>
+                </div>
+                
+                <div class="voice-chat-status">
+                    <div class="status-row">
+                        <span>Status:</span>
+                        <span id="callStatusValue" class="status-value status-waiting">Disconnected</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Call ID:</span>
+                        <span id="callIdValue" class="text-muted">Not connected</span>
+                    </div>
+                </div>
+
+                <div class="voice-selection mb-3">
+                    <select class="form-select" id="voice-select">
+                        <option value="Mark" selected>Mark - English (US)</option>
+                        <option value="bef461b7-d234-4d31-b09d-b6a101f7c79c">Bea - Polish</option>
+                        <option value="03ed40bf-90c7-42f3-becd-79fc816bbd84">Ben - German</option>
+                        <option value="9f6262e3-1b03-4a0b-9921-50b9cff66a43">Krishna - Hindi</option>
+                    </select>
+                </div>
+
+                <div class="call-control text-center mb-3">
+                    <div id="loadingSpinner" class="spinner-border text-primary hidden" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <button id="startCallButton" class="btn btn-primary">
+                        <i class="fas fa-phone-alt"></i> Start Call
+                    </button>
+                    <button id="endCallButton" class="btn btn-danger hidden">
+                        <i class="fas fa-phone-slash"></i> End Call
+                    </button>
+                </div>
+
+                <div class="transcript-container border rounded p-2">
+                    <p id="transcriptContent" class="mb-0 text-muted">
+                        Start a call to begin voice interaction.
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS Utilities -->
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/ultravox.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

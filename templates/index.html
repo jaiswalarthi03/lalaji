@@ -1,0 +1,799 @@
+{% import 'macros/stat_card.html' as stat_macros %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - {{ active_store.store_name if active_store else 'No Store' }}.ai</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flag-icons.css') }}">
+    
+    
+    <!-- Flag Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.11.0/css/flag-icons.min.css">
+    
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory_enhanced.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flag-icons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    
+
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                    <span class="store-name">{{ active_store.store_name if active_store else 'No Store' }}</span><span class="logo-dot">.ai</span>
+                </a>
+                
+                <!-- Country Flag Dropdown -->
+                <div class="flag-dropdown dropdown ms-auto me-3">
+                    <button class="btn dropdown-toggle" type="button" id="storeFlagsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span id="currentFlagIcon" class="flag-icon {% if active_store %}flag-icon-{{ active_store.country_code.lower() }}{% endif %}"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="storeFlagsDropdown">
+                        {% for store in all_stores %}
+                        <li>
+                            <a class="dropdown-item flag-button {% if store.is_active %}active{% endif %}" href="#" data-country-code="{{ store.country_code }}">
+                                <span class="flag-icon flag-icon-{{ store.country_code.lower() }}"></span>
+                                {{ store.country_name }} ({{ store.store_name }})
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> <b>Dashboard</b></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.reports') }}"><i class="fas fa-chart-bar"></i> <b>Reports</b></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.inventory') }}"><i class="fas fa-boxes"></i> <b>Inventory</b></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.settings') }}"><i class="fas fa-cog"></i> <b>Settings</b></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+      
+         <div class="inventory-container">
+            <div class="inventory-stacked-layout">
+                <!-- Metrics Section - Quick Stats -->
+                <div class="inventory-section metrics-section">
+                    <div class="inventory-stats">
+                        {{ stat_macros.stat_card('fas fa-cubes', 'bg-primary', 'Total Items', inventory_stats.total_items, '', "window.location.href='" ~ url_for('main.inventory') ~ "'") }}
+                        {{ stat_macros.stat_card('fas fa-exclamation-triangle', 'bg-warning', 'Low Stock', inventory_stats.low_stock_count) }}
+                        {{ stat_macros.stat_card('fas fa-money-bill-wave', 'bg-success', 'Inventory Value', (active_store.currency_symbol if active_store else '') ~ "{:,.0f}".format(inventory_stats.inventory_value)) }}
+                        {{ stat_macros.stat_card('fas fa-history', 'bg-info', 'Turnover Rate', inventory_stats.turnover_rate ~ 'x') }}
+                    </div>
+                </div>
+
+        <div class="main-layout">
+            <div class="dual-panel">
+                <div class="tabs-section">
+                    <div class="chat-panels">
+                        <div class="col-md-6 border-end">
+
+                            <div id="customer-list">
+                                <div class="chat-section-header px-3 py-2 border-bottom fw-semibold text-muted">
+                                    <i class="fas fa-user me-2 text-primary"></i> Customer Chats
+                                </div>
+                                <div class="user-list">
+                                    {% for customer in customers %}
+                                        {% set img_path = url_for('static', filename='customer/' + customer['id']|string + '.png') %}
+                                        <a href="#" class="chat-list-item load-chat d-flex align-items-center text-decoration-none text-dark p-2" data-customer-id="{{ customer['id'] }}">
+                                            <div class="chat-avatar me-3">
+                                                <img src="{{ img_path }}" alt="{{ customer['name'] }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                <span style="display:none;">{{ customer['name'][:2].upper() }}</span>
+                                            </div>
+                                            <div class="chat-info">
+                                                <div class="chat-name fw-bold">{{ customer['name'] }}</div>
+                                                <div class="chat-phone text-muted small">{{ customer['phone'] }}</div>
+                                            </div>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div id="customer-chat" style="display: none;">
+                                <!-- Chat view will be injected here -->
+                            </div>
+                        </div>
+                        <!-- Distributor List Panel -->
+                        <div class="col-md-6">
+                            <div id="distributor-list">
+                                <div class="chat-section-header px-3 py-2 border-bottom fw-semibold text-muted">
+                                    <i class="fas fa-truck me-2 text-success"></i> Distributor Chats
+                                </div>
+                                {% for distributor in distributors %}
+                                    {% set img_path = url_for('static', filename='distributor/' + distributor['id']|string + '.png') %}
+                                    <a href="#" class="chat-list-item distributor-list-item load-chat d-flex align-items-center text-decoration-none text-dark p-2" data-distributor-id="{{ distributor['id'] }}">
+                                        <div class="chat-avatar me-3">
+                                            <img src="{{ img_path }}" alt="{{ distributor['name'] }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <span style="display:none;">{{ distributor['name'][:2].upper() }}</span>
+                                        </div>
+                                        <div class="chat-info">
+                                            <div class="chat-name fw-bold">{{ distributor['name'] }}</div>
+                                            <div class="chat-phone text-muted small">{{ distributor['phone'] }}</div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                            <div id="distributor-chat" style="display: none;">
+                                <!-- Chat view will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="avatar-section">
+                    <div id="avatarContainer">
+                        <div class="avatar-image">
+                            {% if active_store %}
+                            <img src="{{ url_for('static', filename='images/avatar-' + active_store.country_code.lower() + '.png') }}" 
+                                alt="{{ active_store.store_name }} Assistant"
+                                onerror="this.src='{{ url_for('static', filename='images/avatar-default.png') }}'">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/avatar-default.png') }}" alt="Assistant">
+                            {% endif %}
+                        </div>
+                        <div class="avatar-animation"></div>
+                        <div class="avatar-rings">
+                            <div class="ring"></div>
+                            <div class="ring"></div>
+                            <div class="ring"></div>
+                        </div>
+                    </div>
+
+                    <div class="voice-control-panel mt-4">
+                        <div class="call-status mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Status:</span>
+                                <span id="callStatusValue" class="status-value status-waiting">Disconnected</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Session ID:</span>
+                                <span id="callIdValue" class="text-muted">Not connected</span>
+                            </div>
+                        </div>
+
+                        <!-- Hide the voice selection dropdown but keep it for functionality -->
+                        <div class="voice-selection mb-3" style="display:none;">
+                            <select class="form-select" id="voice-select">
+                                <option value="Mark" data-country-code="us">Mark - English (US)</option>
+                                <option value="bef461b7-d234-4d31-b09d-b6a101f7c79c" data-country-code="pl">Bea - Polish</option>
+                                <option value="03ed40bf-90c7-42f3-becd-79fc816bbd84" data-country-code="de">Ben - German</option>
+                                <option value="your-hindi-voice-id-here" data-country-code="in">Krishna - Hindi</option>
+                            </select>
+                        </div>
+
+                        <div class="call-control text-center mb-3">
+                            <div id="loadingSpinner" class="spinner-border text-primary hidden" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <button id="startCallButton" class="btn btn-primary">
+                                <i class="fas fa-phone-alt"></i> Start Call
+                            </button>
+                            <button id="endCallButton" class="btn btn-danger hidden">
+                                <i class="fas fa-phone-slash"></i> End Call
+                            </button>
+                        </div>
+
+                        <div class="transcript-container border rounded p-2">
+                            <p id="transcriptContent" class="mb-0 text-muted">
+                                Start a call to begin voice interaction.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Direct Ultravox client library import -->
+    <script type="module">
+        try {
+            const module = await import('https://esm.sh/ultravox-client');
+            window.UltravoxSession = module.UltravoxSession;
+            console.log("Successfully loaded Ultravox client module directly in index.html");
+            // Dispatch event to notify components that Ultravox is ready
+            window.dispatchEvent(new Event('ultravox_ready'));
+        } catch (error) {
+            console.error("Failed to load Ultravox client module:", error);
+        }
+    </script>
+
+    <!-- Customer Help Modal -->
+    <div class="modal fade" id="customerHelpModal" tabindex="-1" aria-labelledby="customerHelpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerHelpModalLabel">Customer Chat Examples</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Example Customer Queries:</h6>
+                    <div class="list-group mb-3">
+                        <div class="list-group-item">
+                            <strong>Place an order:</strong> "I want to order 5 boxes of Maggi Noodles and 2 packets of Lux Soap"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Check price:</strong> "How much does a Colgate Toothpaste cost?"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Check availability:</strong> "Do you have Britannia Marie Gold biscuits in stock?"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Product recommendation:</strong> "What type of tea do you recommend?"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Return item:</strong> "I'd like to return the Surf Excel I bought yesterday"
+                        </div>
+                    </div>
+                    <p class="text-info">
+                        <i class="fas fa-info-circle"></i> The system uses natural language processing to understand customer queries and respond appropriately.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distributor Help Modal -->
+    <div class="modal fade" id="distributorHelpModal" tabindex="-1" aria-labelledby="distributorHelpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="distributorHelpModalLabel">Distributor Chat Examples</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Example Distributor Queries:</h6>
+                    <div class="list-group mb-3">
+                        <div class="list-group-item">
+                            <strong>Place a restock order:</strong> "I need to order 50 units of Maggi Noodles and 30 units of Britannia Marie Gold"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Check current stock:</strong> "What is the current stock level for Dabur Honey?"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Price negotiation:</strong> "Can we get a better price on the Lipton Tea if we order 100 units?"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Update delivery date:</strong> "Our Parle-G Biscuits shipment will arrive on Tuesday instead of Monday"
+                        </div>
+                        <div class="list-group-item">
+                            <strong>New product:</strong> "We have a new brand of toothpaste available. Would you like samples?"
+                        </div>
+                    </div>
+                    <p class="text-info">
+                        <i class="fas fa-info-circle"></i> The system uses natural language processing to understand distributor queries and manage inventory accordingly.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ultravox Voice Call Integration -->
+    <script>
+        // Variables to store UI elements
+        let startCallButton;
+        let endCallButton;
+        let callStatusValue;
+        let callIdValue;
+        let transcriptContent;
+        let loadingSpinner;
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get UI elements
+            startCallButton = document.getElementById('startCallButton');
+            endCallButton = document.getElementById('endCallButton');
+            callStatusValue = document.getElementById('callStatusValue');
+            callIdValue = document.getElementById('callIdValue');
+            transcriptContent = document.getElementById('transcriptContent');
+            loadingSpinner = document.getElementById('loadingSpinner');
+            
+            // Check if Ultravox is already loaded
+            if (window.UltravoxSession) {
+                setupCallButtons();
+            } else {
+                // Wait for Ultravox to be ready
+                window.addEventListener('ultravox_ready', setupCallButtons);
+                console.log('Waiting for Ultravox to initialize...');
+            }
+        });
+        
+        // Set up call button event handlers
+        function setupCallButtons() {
+            console.log('Setting up call buttons...');
+            
+            if (startCallButton) {
+                startCallButton.addEventListener('click', startCall);
+            }
+            
+            if (endCallButton) {
+                endCallButton.addEventListener('click', endCall);
+            }
+        }
+        
+        // Start the voice call
+        async function startCall() {
+            try {
+                // Show loading state
+                startCallButton.disabled = true;
+                loadingSpinner.classList.remove('hidden');
+                callStatusValue.textContent = 'Connecting...';
+                callStatusValue.className = 'status-value status-connecting';
+                
+                // Get the current active store country code from the server
+                const countryCode = "{% if active_store %}{{ active_store.country_code.lower() }}{% else %}in{% endif %}";
+                
+                // Map country codes to voice IDs
+                const voiceMap = {
+                    'us': 'Mark', // English (US)
+                    'pl': 'bef461b7-d234-4d31-b09d-b6a101f7c79c', // Polish
+                    'de': '03ed40bf-90c7-42f3-becd-79fc816bbd84', // German
+                    'in': 'your-hindi-voice-id-here'  // Hindi
+                };
+                
+                // Get selected voice based on country code
+                const selectedVoice = voiceMap[countryCode] || 'Mark'; // Default to Mark if no match
+                
+                console.log(`Using voice for country code: ${countryCode}, voice: ${selectedVoice}`);
+                
+                // Initialize Ultravox if needed
+                if (!window.uvSession) {
+                    console.log('Creating new UltravoxSession...');
+                    window.uvSession = new window.UltravoxSession({ 
+                        experimentalMessages: new Set(["debug"]) 
+                    });
+                    console.log('UltravoxSession created successfully');
+                }
+                
+                // Start call with selected voice
+                const response = await fetch('/start_call', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voice: selectedVoice })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to start voice call');
+                }
+                
+                const callDetails = await response.json();
+                callIdValue.textContent = callDetails.callId || 'Connected';
+                
+                // Join call and activate features
+                if (window.uvSession) {
+                    console.log('Joining call with URL:', callDetails.joinUrl);
+                    await window.uvSession.joinCall(callDetails.joinUrl);
+                    
+                    // Add transcript event listener
+                    window.uvSession.addEventListener('transcripts', handleTranscripts);
+                    
+                    // Update UI
+                    startCallButton.classList.add('hidden');
+                    endCallButton.classList.remove('hidden');
+                    callStatusValue.textContent = 'Connected';
+                    callStatusValue.className = 'status-value status-connected';
+                    
+                    // Add animation to avatar if exists
+                    const avatarContainer = document.getElementById('avatarContainer');
+                    if (avatarContainer) {
+                        avatarContainer.classList.add('active');
+                    }
+                }
+            } catch (error) {
+                console.error('Voice call error:', error);
+                callStatusValue.textContent = 'Error';
+                callStatusValue.className = 'status-value status-disconnected';
+                transcriptContent.textContent = 'Error: ' + error.message;
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                startCallButton.disabled = false;
+            }
+        }
+        
+        // Handle transcript updates
+        function handleTranscripts(event) {
+            const transcripts = event.target._transcripts;
+            if (transcripts && transcripts.length > 0) {
+                // Get latest transcript
+                const latest = transcripts[transcripts.length - 1];
+                if (latest) {
+                    // Update transcript display
+                    transcriptContent.innerHTML = `
+                        <strong>${latest.speaker === 'user' ? 'You' : 'Assistant'}:</strong> ${latest.text}
+                    `;
+                }
+            }
+        }
+        
+        // End the voice call
+        async function endCall() {
+            try {
+                endCallButton.disabled = true;
+                loadingSpinner.classList.remove('hidden');
+                
+                if (window.uvSession) {
+                    await window.uvSession.leaveCall();
+                    window.uvSession.removeEventListener('transcripts', handleTranscripts);
+                    
+                    // Reset UI
+                    endCallButton.classList.add('hidden');
+                    startCallButton.classList.remove('hidden');
+                    startCallButton.disabled = false;
+                    callStatusValue.textContent = 'Disconnected';
+                    callStatusValue.className = 'status-value status-waiting';
+                    callIdValue.textContent = 'Not connected';
+                    transcriptContent.textContent = 'Start a call to begin voice interaction.';
+                    
+                    // Remove animation from avatar if exists
+                    const avatarContainer = document.getElementById('avatarContainer');
+                    if (avatarContainer) {
+                        avatarContainer.classList.remove('active');
+                    }
+                }
+            } catch (error) {
+                console.error('Error ending call:', error);
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                endCallButton.disabled = false;
+            }
+        }
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flagButtons = document.querySelectorAll('.flag-button');
+        flagButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const countryCode = this.getAttribute('data-country-code');
+                if (countryCode) {
+                    // Send a request to change the store
+                    fetch('/api/change_store', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ country_code: countryCode }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                window.location.reload(); // Reload the page to reflect the store change
+                            } else {
+                                alert('Failed to change store: ' + (data.message || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error changing store:', error);
+                            alert('Error changing store');
+                        });
+                }
+            });
+        });
+    });
+</script>
+ <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <style>
+    #customer-chat, #distributor-chat {
+        height: 420px !important;
+        min-height: 420px !important;
+        max-height: 420px !important;
+        background: #f8fafc;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        margin-top: 10px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+    .chat-box, #customerChatContainer, #distributorChatContainer {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 0.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: #c7bfe6 #ede9f7;
+        max-height: calc(420px - 120px);
+    }
+    .chat-box::-webkit-scrollbar, #customerChatContainer::-webkit-scrollbar, #distributorChatContainer::-webkit-scrollbar {
+        width: 8px;
+        background: #ede9f7;
+        border-radius: 8px;
+    }
+    .chat-box::-webkit-scrollbar-thumb, #customerChatContainer::-webkit-scrollbar-thumb, #distributorChatContainer::-webkit-scrollbar-thumb {
+        background: #c7bfe6;
+        border-radius: 8px;
+    }
+    /* Subtle beautification for chat event entries on dashboard */
+    .chat-list-item {
+        border: 1px solid #f6f3fa;
+        border-radius: 14px;
+        background: linear-gradient(90deg, #fefeff 80%, #faf9ff 100%);
+        box-shadow: 0 2px 8px rgba(199,191,230,0.04);
+        margin-bottom: 8px;
+        transition: background 0.25s, box-shadow 0.25s, transform 0.18s;
+        position: relative;
+        overflow: hidden;
+        padding: 0.75rem 1rem;
+    }
+    /* Green gradient for distributor chat list items */
+    .chat-list-item.distributor-list-item {
+        background: linear-gradient(90deg, #f8fffa 80%, #f0fff0 100%);
+        border: 1px solid #f5fff5;
+        box-shadow: 0 2px 8px rgba(40,167,69,0.04);
+    }
+    .chat-list-item:hover {
+        background: linear-gradient(90deg, #faf9ff 80%, #fefeff 100%);
+        box-shadow: 0 4px 16px rgba(199,191,230,0.10);
+        transform: translateY(-2px) scale(1.015);
+        z-index: 2;
+    }
+    /* Green hover effect for distributor chat list items */
+    .chat-list-item.distributor-list-item:hover {
+        background: linear-gradient(90deg, #f0fff0 80%, #f8fffa 100%);
+        box-shadow: 0 4px 16px rgba(40,167,69,0.10);
+        transform: translateY(-2px) scale(1.015);
+        z-index: 2;
+    }
+    .chat-avatar {
+        width: 48px;
+        height: 48px;
+        background-color: #ede9f7;
+        color: #7c3aed;
+        border-radius: 50%;
+        margin-right: 14px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        box-shadow: 0 1px 4px rgba(199,191,230,0.07);
+        border: 2px solid #f6f3fa;
+        position: relative;
+        overflow: hidden;
+    }
+    .chat-avatar img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    .chat-avatar span {
+        position: absolute;
+        left: 0; right: 0; top: 0; bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        font-size: 1.2rem;
+        background: #ede9f7;
+        color: #7c3aed;
+        border-radius: 50%;
+    }
+    .chat-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .chat-name {
+        font-weight: 600;
+        font-size: 1.08rem;
+        color: #22223b;
+        letter-spacing: 0.01em;
+    }
+    .chat-phone {
+        font-size: 0.92rem;
+        color: #a3a3b2;
+    }
+    .dual-panel {
+        display: flex;
+        width: 100%;
+        min-height: 420px;
+    }
+    .dual-panel > .col-md-6 {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        position: relative;
+    }
+    .dual-panel > .col-md-6.border-end {
+        border-right: none;
+        position: relative;
+    }
+    .dual-panel > .col-md-6.border-end::after {
+        content: '';
+        position: absolute;
+        top: 5%;
+        bottom: 5%;
+        right: 0;
+        width: 4px;
+        border-radius: 2px;
+        background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #1e3a8a 100%);
+        opacity: 1;
+        z-index: 10;
+        box-shadow: 0 0 4px 0 rgba(30,58,138,0.4);
+    }
+    /* Ensure chat input area doesn't shrink */
+    .chat-input-area {
+        flex-shrink: 0 !important;
+        min-height: 60px !important;
+    }
+    
+    /* Ensure chat header doesn't shrink */
+    .chat-header {
+        flex-shrink: 0 !important;
+    }
+    
+    /* Beautiful product showcase styling for main dashboard */
+    .product-showcase {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 10px 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .product-showcase h3 {
+        margin: 0 0 15px 0;
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 15px 0;
+    }
+
+    .product-card {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .product-card .product-name {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+
+    .product-card .product-price {
+        font-size: 1.2em;
+        color: #ffd700;
+        margin-bottom: 5px;
+    }
+
+    .product-card .product-stock {
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
+
+    .welcome-message {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 10px 0;
+        text-align: center;
+    }
+
+    .welcome-message h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.4em;
+    }
+
+    .welcome-message p {
+        margin: 10px 0;
+        opacity: 0.9;
+    }
+
+    .example-commands {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+
+    .example-commands h4 {
+        margin: 0 0 10px 0;
+        font-size: 1.1em;
+    }
+
+    .example-commands ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .example-commands li {
+        padding: 5px 0;
+        opacity: 0.9;
+    }
+
+    .example-commands li:before {
+        content: "💡 ";
+        margin-right: 8px;
+    }
+
+    /* Distributor-specific styling */
+    .distributor-chat .product-showcase {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
+    .distributor-chat .welcome-message {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
+    .restock-confirmation {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 5px 0;
+    }
+
+    /* Ensure customer chat bubbles remain blue */
+    .customer-chat .user-msg .msg-bubble {
+        background-color: #0d6efd !important;
+        color: white !important;
+    }
+
+    .customer-chat .bot-msg .msg-bubble {
+        background-color: lightblue !important;
+        color: black !important;
+    }
+
+    .chat-section-header {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        border-bottom: 1px solid #dee2e6;
+    }
+    </style>
+</body>
+</html>

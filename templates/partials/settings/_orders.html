@@ -1,0 +1,205 @@
+<!-- Orders Tab -->
+<div class="tab-pane fade" id="orders" role="tabpanel">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#customerOrders" type="button" role="tab">
+                        <i class="fas fa-shopping-cart"></i> Customer Orders
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#distributorOrders" type="button" role="tab">
+                        <i class="fas fa-truck-loading"></i> Distributor Orders
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <!-- Customer Orders -->
+                <div class="tab-pane fade show active" id="customerOrders" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Customer Orders</h4>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addCustomerOrderModal">
+                            <i class="fas fa-plus"></i> New Order
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerOrdersTableBody">
+                                {% for order in customer_orders %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.customer.name }}</td>
+                                    <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ active_store.currency_symbol }}{{ order.total }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ order.status_color }}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary view-order" data-order-id="{{ order.id }}" data-order-type="customer">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-order" data-order-id="{{ order.id }}" data-order-type="customer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Distributor Orders -->
+                <div class="tab-pane fade" id="distributorOrders" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Distributor Orders</h4>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addDistributorOrderModal">
+                            <i class="fas fa-plus"></i> New Order
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Distributor</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="distributorOrdersTableBody">
+                                {% for order in distributor_orders %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.distributor.name }}</td>
+                                    <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ active_store.currency_symbol }}{{ order.total }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ order.status_color }}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary view-order" data-order-id="{{ order.id }}" data-order-type="distributor">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-order" data-order-id="{{ order.id }}" data-order-type="distributor">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Order Modal -->
+<div class="modal fade" id="viewOrderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="updateOrderStatus">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Customer Order Modal -->
+<div class="modal fade" id="addCustomerOrderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Customer Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customerOrderForm">
+                    <div class="mb-3">
+                        <label for="customerSelect" class="form-label">Customer</label>
+                        <select class="form-select" id="customerSelect" required>
+                            <option value="">Select Customer</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.id }}">{{ customer.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="orderItems">
+                        <!-- Order items will be added dynamically -->
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary" id="addOrderItem">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveCustomerOrder">Save Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Distributor Order Modal -->
+<div class="modal fade" id="addDistributorOrderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Distributor Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="distributorOrderForm">
+                    <div class="mb-3">
+                        <label for="distributorSelect" class="form-label">Distributor</label>
+                        <select class="form-select" id="distributorSelect" required>
+                            <option value="">Select Distributor</option>
+                            {% for distributor in distributors %}
+                            <option value="{{ distributor.id }}">{{ distributor.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="distributorOrderItems">
+                        <!-- Order items will be added dynamically -->
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary" id="addDistributorOrderItem">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveDistributorOrder">Save Order</button>
+            </div>
+        </div>
+    </div>
+</div> 

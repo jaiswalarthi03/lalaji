@@ -1,0 +1,136 @@
+<!-- Currency Conversion Modal -->
+<div class="modal fade" id="currencyModal" tabindex="-1" aria-labelledby="currencyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="currencyModalLabel">Currency Conversion Rates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Rate</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="currencyRatesTable">
+                            <!-- Rates will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Quick Conversion</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" id="convertAmount" value="1" min="0" step="0.01">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="convertFrom">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="INR">INR</option>
+                                <option value="PLN">PLN</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 text-center">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="convertTo">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="INR">INR</option>
+                                <option value="PLN">PLN</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary" onclick="convertCurrency()">Convert</button>
+                        </div>
+                    </div>
+                    <div class="mt-2" id="conversionResult"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveCurrencyRates()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadCurrencyRates() {
+    fetch('/currency/rates')
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('currencyRatesTable');
+            table.innerHTML = '';
+            
+            data.rates.forEach(rate => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${rate.from_currency}</td>
+                    <td>${rate.to_currency}</td>
+                    <td><input type="number" class="form-control" value="${rate.rate}" step="0.0001"></td>
+                    <td>${new Date(rate.last_updated).toLocaleString()}</td>
+                `;
+                table.appendChild(row);
+            });
+        });
+}
+
+function saveCurrencyRates() {
+    const rates = [];
+    const rows = document.getElementById('currencyRatesTable').rows;
+    
+    for (let row of rows) {
+        const cells = row.cells;
+        rates.push({
+            from_currency: cells[0].textContent,
+            to_currency: cells[1].textContent,
+            rate: parseFloat(cells[2].querySelector('input').value)
+        });
+    }
+    
+    fetch('/currency/rates', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rates })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Currency rates updated successfully');
+        loadCurrencyRates();
+    })
+    .catch(error => {
+        alert('Error updating currency rates');
+        console.error(error);
+    });
+}
+
+function convertCurrency() {
+    const amount = document.getElementById('convertAmount').value;
+    const from = document.getElementById('convertFrom').value;
+    const to = document.getElementById('convertTo').value;
+    
+    fetch(`/currency/convert?from=${from}&to=${to}&amount=${amount}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('conversionResult').innerHTML = `
+                ${amount} ${from} = ${data.converted_amount.toFixed(2)} ${to}
+                <br>
+                <small>Rate: 1 ${from} = ${data.rate.toFixed(4)} ${to}</small>
+            `;
+        });
+}
+
+// Load rates when modal is shown
+document.getElementById('currencyModal').addEventListener('shown.bs.modal', loadCurrencyRates);
+</script> 

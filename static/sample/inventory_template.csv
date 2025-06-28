@@ -1,0 +1,21 @@
+sku,name,category,quantity,price,cost_price,supplier_id,reorder_level
+ABC123,Rice (5kg),Groceries,50,250,180,1,10
+DEF456,Wheat Flour (1kg),Groceries,35,60,45,1,8
+GHI789,Sugar (1kg),Groceries,40,55,40,1,10
+JKL012,Tea Leaves (250g),Beverages,60,120,90,2,15
+MNO345,Coffee Powder (100g),Beverages,25,180,120,2,5
+PQR678,Cooking Oil (1L),Groceries,30,150,110,3,8
+STU901,Salt (1kg),Groceries,80,25,15,1,20
+VWX234,Black Pepper (100g),Spices,40,80,50,3,10
+YZA567,Turmeric Powder (100g),Spices,45,50,30,3,15
+BCD890,Lentils - Red (500g),Groceries,30,90,65,1,10
+EFG123,Lentils - Black (500g),Groceries,25,100,70,1,8
+HIJ456,Detergent Powder (1kg),Household,20,200,150,4,5
+KLM789,Toilet Cleaner (500ml),Household,15,90,60,4,5
+NOP012,Dish Soap (500ml),Household,25,80,55,4,8
+QRS345,Paper Towels (Pack of 2),Household,30,60,40,4,10
+TUV678,Toothpaste (100g),Personal Care,40,85,60,5,15
+WXY901,Shampoo (200ml),Personal Care,35,150,100,5,12
+ZAB234,Soap (75g x 3),Personal Care,50,60,40,5,20
+CDE567,Chocolate Bar (50g),Snacks,60,40,25,6,25
+FGH890,Chips (Large),Snacks,45,30,18,6,20

@@ -1,0 +1,261 @@
+{% import 'macros/stat_card.html' as stat_macros %}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+            <div class="d-flex flex-wrap align-items-end gap-3 mb-3">
+                <div class="flex-grow-1">
+                    <label for="reportType" class="form-label mb-1">Report Type</label>
+                    <select id="reportType" class="form-select">
+                        <option value="seasonal">Seasonal Demand</option>
+                        <option value="stockout">Stockout Risk</option>
+                                    <option value="pricing">Pricing Optimization</option>
+                                    <option value="reordering">Reordering Analysis</option>
+                                    <option value="expiry">Expiry Tracking</option>
+                                    <option value="sales">Sales Analytics</option>
+                                    <option value="restructure">Inventory Restructuring</option>
+                                </select>
+                            </div>
+                <div>
+                    <label for="periodType" class="form-label mb-1">Time Period</label>
+                    <select id="periodType" class="form-select">
+                        <option value="daily">Daily</option>
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                                </div>
+                <div>
+                    <button id="runReportBtn" class="btn btn-primary">Run Report</button>
+                            </div>
+                        </div>
+            <div class="card p-4 mb-4">
+                <h5 id="chartTitle" class="mb-3"></h5>
+                <div class="row gx-3 gy-3">
+                        <div class="col-md-8">
+                        <div class="p-2 bg-white rounded-3 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                            <canvas id="mainReportChart" width="600" height="320"></canvas>
+                        </div>
+                        </div>
+                        <div class="col-md-4">
+                        <div class="p-2 bg-white rounded-3 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                            <canvas id="secondaryReportChart" width="320" height="320"></canvas>
+                        </div>
+                    </div>
+                        </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="p-2 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-center">
+                            <canvas id="pieReportChart" width="940" height="320"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div id="reportStats" class="mt-4"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+    let chartInstance = null;
+let secondaryChartInstance = null;
+let pieChartInstance = null;
+let currentPeriod = 'weekly';
+
+const BLUE_COLORS = [
+    '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#1e40af', '#1d4ed8', '#38bdf8', '#0ea5e9', '#0284c7', '#0369a1'
+];
+
+function capitalizeFirstLetter(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const reportTypeSelect = document.getElementById('reportType');
+    const periodTypeSelect = document.getElementById('periodType');
+    const runBtn = document.getElementById('runReportBtn');
+    const chartTitle = document.getElementById('chartTitle');
+    const chartCanvas = document.getElementById('mainReportChart');
+    const secondaryChartCanvas = document.getElementById('secondaryReportChart');
+    const pieChartCanvas = document.getElementById('pieReportChart');
+    const statsDiv = document.getElementById('reportStats');
+
+    runBtn.addEventListener('click', function() {
+        const reportType = reportTypeSelect.value;
+        const period = periodTypeSelect.value;
+        currentPeriod = period;
+        chartTitle.textContent = '';
+        statsDiv.innerHTML = '';
+        if (chartInstance) chartInstance.destroy();
+        if (secondaryChartInstance) secondaryChartInstance.destroy();
+        if (pieChartInstance) pieChartInstance.destroy();
+        fetch(`/api/reports/${reportType}?period=${period}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error || data.warning) {
+                    chartTitle.textContent = data.error || data.warning;
+                    return;
+                }
+                let labels = (data.data && data.data.labels) ? data.data.labels : [];
+                let datasets = (data.data && data.data.datasets) ? data.data.datasets : [];
+                let chartType = (reportType === 'sales') ? 'line' : 'bar';
+                // Force all datasets to use blue colors
+                datasets = datasets.map((ds, i) => ({
+                    ...ds,
+                    backgroundColor: BLUE_COLORS[i % BLUE_COLORS.length],
+                    borderColor: BLUE_COLORS[i % BLUE_COLORS.length],
+                    pointBackgroundColor: BLUE_COLORS[i % BLUE_COLORS.length],
+                    pointBorderColor: BLUE_COLORS[i % BLUE_COLORS.length],
+                    fill: chartType === 'line' ? false : true
+                }));
+                chartTitle.textContent = `${capitalizeFirstLetter(reportType.replace('_', ' '))} (${capitalizeFirstLetter(period)})`;
+                chartInstance = new Chart(chartCanvas, {
+            type: chartType,
+            data: {
+                labels: labels,
+                        datasets: datasets
+            },
+            options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                plugins: {
+                            legend: { display: true, position: 'top' },
+                            title: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                backgroundColor: '#ef4444',
+                                borderRadius: 8,
+                                color: '#fff',
+                                font: { weight: 'bold', size: 18 },
+                                padding: {top: 4, bottom: 4, left: 8, right: 8},
+                                formatter: function(value) {
+                                    if (typeof value === 'number') {
+                                        return value;
+                                    } else if (value && value.y !== undefined) {
+                                        return value.y;
+                                    }
+                                    return '';
+                                }
+                            }
+                },
+                scales: {
+                            x: {
+                                ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
+                            },
+                            y: { beginAtZero: true }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+                // Secondary chart: show the second dataset if available, else repeat the first, also blue
+                let secondaryLabels = labels;
+                let secondaryDatasets = (datasets.length > 1) ? [datasets[1]] : [datasets[0]];
+                secondaryDatasets = secondaryDatasets.map((ds, i) => ({
+                    ...ds,
+                    backgroundColor: BLUE_COLORS[(i+1) % BLUE_COLORS.length],
+                    borderColor: BLUE_COLORS[(i+1) % BLUE_COLORS.length],
+                    pointBackgroundColor: BLUE_COLORS[(i+1) % BLUE_COLORS.length],
+                    pointBorderColor: BLUE_COLORS[(i+1) % BLUE_COLORS.length],
+                    fill: false
+                }));
+                secondaryChartInstance = new Chart(secondaryChartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: secondaryLabels,
+                        datasets: secondaryDatasets
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                backgroundColor: '#ef4444',
+                                borderRadius: 8,
+                                color: '#fff',
+                                font: { weight: 'bold', size: 18 },
+                                padding: {top: 4, bottom: 4, left: 8, right: 8},
+                                formatter: function(value) {
+                                    if (typeof value === 'number') {
+                                        return value;
+                                    } else if (value && value.y !== undefined) {
+                                        return value.y;
+                                    }
+                                    return '';
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 }
+                            },
+                            y: { beginAtZero: true }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+                // Pie chart: show a breakdown of the first dataset, all blue
+                let pieLabels = labels.slice(0, 6);
+                let pieData = (datasets[0] && datasets[0].data) ? datasets[0].data.slice(0, 6) : [];
+                pieChartInstance = new Chart(pieChartCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            label: 'Breakdown',
+                            data: pieData,
+                            backgroundColor: BLUE_COLORS.slice(0, pieLabels.length)
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'bottom' },
+                            datalabels: {
+                                backgroundColor: '#ef4444',
+                                borderRadius: 8,
+                                color: '#fff',
+                                font: { weight: 'bold', size: 18 },
+                                padding: {top: 4, bottom: 4, left: 8, right: 8},
+                                formatter: function(value) {
+                                    if (typeof value === 'number') {
+                                        return value;
+                                    }
+                                    return '';
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+                // Show stats if available
+                if (data.stats) {
+                    statsDiv.innerHTML = data.stats.map(stat => `<div class=\"stat-item mb-2\"><div class=\"stat-value stat-value-red\">${stat.value}</div><div class=\"stat-label\">${stat.label}</div></div>`).join('');
+            }
+        });
+});
+    // Auto-run on load
+    runBtn.click();
+});
+</script>
+<style>
+body { background: #f8fafc; }
+.inventory-section { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 24px; }
+.inventory-stats .stat-card { margin-bottom: 10px; }
+#mainReportChart, #secondaryReportChart, #pieReportChart { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); width: 100% !important; height: 320px !important; }
+#mainReportChart, #secondaryReportChart { min-height: 320px; max-height: 320px; }
+#pieReportChart { min-height: 320px; max-height: 320px; }
+.stat-item { font-size: 1rem; color: #22223b; background: #f3f4f6; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+.stat-value { font-weight: 600; font-size: 1.2rem; }
+.stat-label { font-size: 0.95rem; color: #6b7280; }
+.stat-value-red { background: #ef4444; color: #fff; font-weight: bold; font-size: 2rem; border-radius: 8px; padding: 6px 16px; display: inline-block; }
+</style>
+{% endblock %}

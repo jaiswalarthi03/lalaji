@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Avatar Voice Assistant - {{ active_store.store_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm rounded-lg mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Voice Assistant</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p>Use our AI-powered voice assistant to get help with your inventory management tasks. Simply click the call button to start talking.</p>
+                            
+                            <div class="mt-4">
+                                <h5>What you can ask:</h5>
+                                <ul>
+                                    <li>Check inventory levels for specific products</li>
+                                    <li>Find low stock items that need reordering</li>
+                                    <li>Get information about recent orders</li>
+                                    <li>Ask for sales trends and recommendations</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            <div id="avatarContainer" class="mx-auto">
+                                <div class="avatar-image">
+                                    <img src="/static/images/avatar-{{ active_store.country_code.lower() }}.png" alt="AI Assistant" 
+                                        onerror="this.src='/static/images/avatar-default.png'">
+                                </div>
+                                <div class="avatar-animation"></div>
+                                <div class="avatar-rings">
+                                    <div class="ring"></div>
+                                    <div class="ring"></div>
+                                    <div class="ring"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="action-buttons mt-4">
+                                <button id="callButton" class="action-btn">
+                                    <i class="fas fa-phone-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm rounded-lg">
+                <div class="card-body">
+                    <h5 class="mb-3">Voice History</h5>
+                    <div id="conversationHistory" class="p-3 bg-light rounded" style="height: 200px; overflow-y: auto;">
+                        <div class="text-muted text-center py-5">
+                            <i class="fas fa-comments fa-2x mb-3 d-block"></i>
+                            Your conversation history will appear here
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/avatar.js') }}"></script>
+{% endblock %}

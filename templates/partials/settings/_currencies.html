@@ -1,0 +1,82 @@
+<!-- Currencies Tab -->
+<div class="tab-pane fade" id="currencies" role="tabpanel">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title">Currency Management</h3>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addCurrencyModal">
+                <i class="fas fa-plus"></i> Add Currency
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Currency Code</th>
+                            <th>Currency Name</th>
+                            <th>Symbol</th>
+                            <th>Exchange Rate (USD)</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currenciesTableBody">
+                        {% for currency in currencies %}
+                        <tr>
+                            <td>{{ currency.code }}</td>
+                            <td>{{ currency.name }}</td>
+                            <td>{{ currency.symbol }}</td>
+                            <td>{{ currency.exchange_rate }}</td>
+                            <td>{{ currency.updated_at.strftime('%Y-%m-%d %H:%M') if currency.updated_at else 'Never' }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary edit-currency" data-currency-id="{{ currency.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-currency" data-currency-id="{{ currency.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Currency Modal -->
+<div class="modal fade" id="addCurrencyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add/Edit Currency</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="currencyForm">
+                    <div class="mb-3">
+                        <label for="currencyCode" class="form-label">Currency Code</label>
+                        <input type="text" class="form-control" id="currencyCode" required maxlength="3" placeholder="e.g., USD">
+                    </div>
+                    <div class="mb-3">
+                        <label for="currencyName" class="form-label">Currency Name</label>
+                        <input type="text" class="form-control" id="currencyName" required placeholder="e.g., US Dollar">
+                    </div>
+                    <div class="mb-3">
+                        <label for="currencySymbol" class="form-label">Symbol</label>
+                        <input type="text" class="form-control" id="currencySymbol" required placeholder="e.g., $">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exchangeRate" class="form-label">Exchange Rate (USD)</label>
+                        <input type="number" class="form-control" id="exchangeRate" required step="0.0001" min="0" placeholder="e.g., 1.0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveCurrency">Save</button>
+            </div>
+        </div>
+    </div>
+</div> 

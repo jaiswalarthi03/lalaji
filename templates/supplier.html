@@ -1,0 +1,61 @@
+<div class="chat-section-header px-3 py-2 border-bottom fw-semibold text-muted">
+    <i class="fas fa-truck me-2 text-primary"></i> Distributor Chats
+</div>
+<div class="user-list">
+    {% for distributor in distributors %}
+        {% set img_path = url_for('static', filename='distributor/' + distributor['id']|string + '.png') %}
+        <a href="#" class="chat-list-item load-chat d-flex align-items-center text-decoration-none text-dark p-2" data-distributor-id="{{ distributor['id'] }}">
+        <div class="chat-avatar me-3">
+                <img src="{{ img_path }}" alt="{{ distributor['name'] }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span style="display:none;">{{ distributor['name'][:2].upper() }}</span>
+        </div>
+        <div class="chat-info">
+                <div class="chat-name fw-bold">{{ distributor['name'] }}</div>
+                <div class="chat-phone text-muted small">{{ distributor['phone'] }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<style>
+.chat-list-item {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+.chat-list-item:hover {
+    background-color: #f5f5f5;
+}
+.chat-avatar {
+    width: 48px;
+    height: 48px;
+    background-color: #ddd;
+    color: white;
+    border-radius: 50%;  /* Circular shape */
+    margin-right: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    position: relative;
+}
+.chat-avatar img {
+    display: block;
+}
+.chat-avatar span {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.2rem;
+    background: #ddd;
+    color: white;
+    border-radius: 50%;
+}
+.chat-info {
+    flex: 1;
+}
+</style>

@@ -1,0 +1,378 @@
+{% import 'macros/stat_card.html' as stat_macros %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - {{ active_store.store_name }}.ai</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Flag Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.11.0/css/flag-icons.min.css">
+    
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory_enhanced.css') }}">
+   
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('main.index') }}"> 
+                    <span class="store-name">{{ active_store.store_name }}</span><span class="logo-dot">.ai</span>
+                </a>
+                
+                <!-- Country Flag Dropdown -->
+                <div class="flag-dropdown dropdown me-3">
+                    <button class="btn dropdown-toggle" type="button" id="storeFlagsDropdown" data-bs-toggle="dropdown" aria-expanded="false" >
+                        <span id="currentFlagIcon" class="flag-icon flag-icon-{{ active_store.country_code.lower() }}"></span>
+                        <i class="fa-solid fa-angle-down"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="storeFlagsDropdown">
+                        {% for store in all_stores %}
+                        <li>
+                            <a class="dropdown-item flag-button {% if store.is_active %}active{% endif %}" href="#" data-country-code="{{ store.country_code }}" >
+                                <span class="flag-icon flag-icon-{{ store.country_code.lower() }}"></span>
+                                {{ store.country_name }} ({{ store.store_name }})
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <button class="btn navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.reports') }}"><i class="fas fa-chart-bar"></i> Reports</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('main.inventory') }}"><i class="fas fa-boxes"></i> Inventory</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.settings') }}">Settings</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="inventory-container">
+            <div class="inventory-stacked-layout">
+                <!-- Metrics Section - Quick Stats -->
+                <div class="inventory-section metrics-section">
+                    <div class="inventory-stats">
+                        {{ stat_macros.stat_card('fas fa-cubes', 'bg-primary', 'Total Items', inventory_stats.total_items) }}
+                        {{ stat_macros.stat_card('fas fa-exclamation-triangle', 'bg-warning', 'Low Stock', inventory_stats.low_stock_count) }}
+                        {{ stat_macros.stat_card('fas fa-money-bill-wave', 'bg-success', 'Inventory Value', active_store.currency_symbol ~ "{:,.0f}".format(inventory_stats.inventory_value)) }}
+                        {{ stat_macros.stat_card('fas fa-history', 'bg-info', 'Turnover Rate', inventory_stats.turnover_rate ~ 'x') }}
+                    </div>
+                </div>
+
+                <!-- Top Section - Update Options -->
+                <div class="inventory-section top-section">
+                    <h3><i class="fas fa-edit"></i> Update Inventory</h3>
+                    
+                    <div class="update-options-row">
+                        <div class="update-option">
+                            <h4><i class="fas fa-qrcode"></i> GTIN/EAN/Bar Code</h4>
+                            <p>Scan or upload barcode images for instant item recognition.</p>
+                            
+                            <div class="upload-area" id="barcodeUploadArea">
+                                <i class="fas fa-camera"></i>
+                                <p>Drag & drop image or click to upload</p>
+                                <input type="file" id="barcodeFileInput" accept="image/*" style="display: none;">
+                            </div>
+                            
+                            <div class="barcode-preview" id="barcodePreview" style="display: none;">
+                                <img id="previewImage" src="" alt="Barcode preview">
+                                <button class="btn btn-sm btn-danger" id="removeBarcodeBtn"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="update-option">
+                            <h4><i class="fas fa-file-excel"></i> Purchase File</h4>
+                            <p>Upload Excel file with product information.</p>
+                            
+                            <div class="upload-area" id="excelUploadArea">
+                                <i class="fas fa-file-excel"></i>
+                                <p>Drag & drop Excel file or click to upload</p>
+                                <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+                                <div class="mt-2 small text-center">
+                                    <a href="{{ url_for('static', filename='sample/inventory_template.csv') }}" download class="text-primary">
+                                        <i class="fas fa-download"></i> Download Sample Template
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="file-info" id="fileInfo" style="display: none;">
+                                <i class="fas fa-file-excel"></i>
+                                <span id="fileName">inventory.xlsx</span>
+                                <button class="btn btn-sm btn-danger" id="removeFileBtn"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="actions-simulation">
+                            <button class="btn btn-primary process-btn" id="processInventoryBtn">
+                                <i class="fas fa-cogs"></i> Process
+                            </button>
+                            
+                            <div class="simulation-tools">
+                                <h4><i class="fas fa-chart-line"></i> Run Simulations</h4><br>
+                                <div class="simulation-options">
+                                    <select class="form-select" id="simulationSelect">
+                                        <option value="" disabled selected>Select Simulation</option>
+                                        <option value="seasonal">Seasonal Demand Fluctuation</option>
+                                        <option value="stockout">Stockout Risk Analysis</option>
+                                        <option value="pricing">Pricing Optimization</option>
+                                        <option value="reordering">Reordering Analysis</option>
+                                        <option value="expiry">Expiry Tracking</option>
+                                        <option value="sales">Sales Analytics</option>
+                                        <option value="restructure">Inventory Restructuring</option>
+                                    </select>
+                                    <button class="btn btn-info" id="analyzeBtn">
+                                        <i class="fas fa-play"></i> Analyze
+                                    </button>
+                                </div><br>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bottom Section - Inventory Table -->
+                <div class="inventory-section bottom-section">
+                    <h3><i class="fas fa-table"></i> Current Inventory Status</h3>
+                    
+                    <div class="inventory-filters">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="inventorySearch" placeholder="Search inventory...">
+                        </div>
+                        
+                        <div class="filter-buttons">
+                            <button class="btn btn-outline-danger btn-sm" id="lowStockBtn">
+                                <i class="fas fa-exclamation-triangle"></i> Low Stock
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" id="inStockBtn">
+                                <i class="fas fa-check-circle"></i> In Stock
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" id="allItemsBtn">
+                                <i class="fas fa-boxes"></i> All Items
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="inventory-table-container">
+                        <table class="table table-hover inventory-table" id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Product Name</th>
+                                    <th>SKU</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                    <th>Price</th>
+                                    <th>Cost</th>
+                                    <th>Margin</th>
+                                    <th>Reorder Level</th>
+                                    <th>Last Updated</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Table content will be filled dynamically with JavaScript -->
+                                <tr>
+                                    <td colspan="12" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i> Loading inventory data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Product Modal -->
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalLabel">Product Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <img id="modalProductImage" src="" class="img-fluid product-img" alt="Product">
+                        </div>
+                        <div class="col-md-8">
+                            <form id="productForm">
+                                <div class="mb-3">
+                                    <label for="productName" class="form-label">Product Name*</label>
+                                    <input type="text" class="form-control" id="productName" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="productBrand" class="form-label">Brand*</label>
+                                            <input type="text" class="form-control" id="productBrand" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="productCategory" class="form-label">Category*</label>
+                                            <input type="text" class="form-control" id="productCategory" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="productSKU" class="form-label">SKU*</label>
+                                            <input type="text" class="form-control" id="productSKU" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="productBarcode" class="form-label">Barcode</label>
+                                            <input type="text" class="form-control" id="productBarcode">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="productPrice" class="form-label">Price ({{ active_store.currency_symbol }})*</label>
+                                            <input type="number" step="0.01" min="0" class="form-control" id="productPrice" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="productCostPrice" class="form-label">Cost Price ({{ active_store.currency_symbol }})*</label>
+                                            <input type="number" step="0.01" min="0" class="form-control" id="productCostPrice" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="productQuantity" class="form-label">Quantity*</label>
+                                            <input type="number" min="0" class="form-control" id="productQuantity" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="productSize" class="form-label">Size</label>
+                                            <input type="text" class="form-control" id="productSize">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="productReorderLevel" class="form-label">Reorder Level*</label>
+                                            <input type="number" min="1" class="form-control" id="productReorderLevel" value="10" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="productDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="productDescription" rows="2"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveProductBtn">Add to Inventory</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/gemini-api.js') }}"></script>
+    <script>
+document.getElementById('barcodeFileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Set the preview image
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('barcodePreview').style.display = 'block';
+
+            // Also set the modal product image
+            document.getElementById('modalProductImage').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Optional: Remove image functionality
+document.getElementById('removeBarcodeBtn').addEventListener('click', function() {
+    document.getElementById('barcodeFileInput').value = '';
+    document.getElementById('previewImage').src = '';
+    document.getElementById('barcodePreview').style.display = 'none';
+    document.getElementById('modalProductImage').src = '';
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+        const flagButtons = document.querySelectorAll('.flag-button');
+        flagButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const countryCode = this.getAttribute('data-country-code');
+                if (countryCode) {
+                    // Send a request to change the store
+                    fetch('/api/change_store', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ country_code: countryCode }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                window.location.reload(); // Reload the page to reflect the store change
+                            } else {
+                                alert('Failed to change store: ' + (data.message || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error changing store:', error);
+                            alert('Error changing store');
+                        });
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

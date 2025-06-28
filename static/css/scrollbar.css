@@ -1,0 +1,66 @@
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+::-webkit-scrollbar-corner {
+    background: #f1f1f1;
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Chat container scrollbar */
+.chat-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: rgba(160, 160, 160, 0.5);
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(160, 160, 160, 0.8);
+}
+
+/* Inventory table scrollbar */
+.inventory-table-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+/* Additional styling for dark-themed scrollbars */
+@media (prefers-color-scheme: dark) {
+    ::-webkit-scrollbar-track {
+        background: #2d3748;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #4a5568;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #718096;
+    }
+    
+    * {
+        scrollbar-color: #4a5568 #2d3748;
+    }
+}

@@ -1,0 +1,11 @@
+{% macro stat_card(icon_class, bg_class, title, value, extra_class='', onclick=None) %}
+<div class="stat-card {{ extra_class }}" {% if onclick %}onclick="{{ onclick }}" style="cursor:pointer;"{% endif %}>
+    <div class="stat-icon {{ bg_class }}">
+        <i class="{{ icon_class }}" style="color: white;"></i>
+    </div>
+    <div class="stat-info">
+        <h4>{{ title }}</h4>
+        <p>{{ value }}</p>
+    </div><br>
+</div>
+{% endmacro %} 
